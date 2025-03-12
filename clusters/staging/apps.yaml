@@ -9,6 +9,6 @@ spec:
   timeout: 5m
   sourceRef:
     kind: GitRepository
-    mname: flux-system
+    name: flux-system
   path: ./apps/staging
   prune: true

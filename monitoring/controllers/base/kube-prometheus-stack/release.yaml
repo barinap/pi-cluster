@@ -55,6 +55,6 @@ spec:
         ## Secret must be manually created in the namespace
         ##
         tls: []
-        # - secretName: grafana-general-tls
-        #   hosts:
-        #   - grafana.example.com    
+        - secretName: grafana-tls-secret
+          hosts:
+          - grafana.barina.tech    

@@ -1,0 +1,15 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: synology-iscsi
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"  # make this the default SC for k3s homelab
+provisioner: csi.san.synology.com
+parameters:
+  protocol: "iscsi"            # use iSCSI protocol
+  dsm: "192.168.1.206"         # Synology DSM host
+  location: "/volume1"         # target volume on the NAS
+  csi.storage.k8s.io/fstype: "ext4"  # filesystem for provisioned PVs
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate

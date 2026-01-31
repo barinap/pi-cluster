@@ -5,6 +5,8 @@ set -euo pipefail
 # Usage:
 #   export CF_Token="<CLOUDFLARE_API_TOKEN>"
 #   export CF_Account_ID="<CLOUDFLARE_ACCOUNT_ID>"
+#   # Optional but recommended if API tokens are scoped per-zone:
+#   export CF_Zone_ID="<CLOUDFLARE_ZONE_ID>"
 #   ./apps/staging/kan/renew-tls.sh
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
@@ -35,6 +37,10 @@ fi
 if [[ -z "${CF_Token:-}" || -z "${CF_Account_ID:-}" ]]; then
   echo "CF_Token and CF_Account_ID must be set in the environment." >&2
   exit 1
+fi
+
+if [[ -z "${CF_Zone_ID:-}" ]]; then
+  echo "Warning: CF_Zone_ID not set. If DNS-01 fails with 'invalid domain', set CF_Zone_ID for barina.tech." >&2
 fi
 
 TMP_DIR="$(mktemp -d)"

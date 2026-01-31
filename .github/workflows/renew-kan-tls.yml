@@ -9,6 +9,7 @@ on:
 env:
   CF_Token: ${{ secrets.CF_Token }}
   CF_Account_ID: ${{ secrets.CF_Account_ID }}
+  CF_Zone_ID: ${{ secrets.CF_Zone_ID }}
   SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
 jobs:

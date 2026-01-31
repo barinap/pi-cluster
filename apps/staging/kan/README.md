@@ -74,45 +74,31 @@ sops --encrypt \
 rm -f /tmp/minio-root-secret.yaml /tmp/kan-s3-secret.yaml
 ```
 
-### 3) TLS secret for tasks.barina.tech
-Create the secret from real cert/key files, then encrypt it:
+### 3) TLS (Let's Encrypt via Cloudflare DNS-01)
+Use the provided script to renew both TLS secrets:
 
 ```bash
-kubectl create secret tls tasks-tls-secret \
-  --cert /path/to/tasks.barina.tech.crt \
-  --key /path/to/tasks.barina.tech.key \
-  --namespace kan \
-  --dry-run=client -o yaml > /tmp/tasks-tls-secret.yaml
+# One-time setup (recommended)
+acme.sh --set-default-ca --server letsencrypt
 
-sops --encrypt \
-  --age age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h \
-  --encrypted-regex '^(data|stringData)$' \
-  /tmp/tasks-tls-secret.yaml > apps/staging/kan/tasks-tls-secret.sops.yaml
+export CF_Token="<CLOUDFLARE_API_TOKEN>"
+export CF_Account_ID="<CLOUDFLARE_ACCOUNT_ID>"
 
-rm -f /tmp/tasks-tls-secret.yaml
+./apps/staging/kan/renew-tls.sh
+
+git add apps/staging/kan/tasks-tls-secret.sops.yaml apps/staging/kan/tasks-storage-tls-secret.sops.yaml
+git commit -m "update kan tls certs"
+git push
 ```
 
-### 4) TLS secret for tasks-storage.barina.tech
-Create the secret from real cert/key files, then encrypt it:
+Requirements:
+- `acme.sh`, `kubectl`, `sops`
+- Your local Age key available to SOPS (for example via `SOPS_AGE_KEY_FILE`)
 
-```bash
-kubectl create secret tls tasks-storage-tls-secret \
-  --cert /path/to/tasks-storage.barina.tech.crt \
-  --key /path/to/tasks-storage.barina.tech.key \
-  --namespace kan \
-  --dry-run=client -o yaml > /tmp/tasks-storage-tls-secret.yaml
-
-sops --encrypt \
-  --age age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h \
-  --encrypted-regex '^(data|stringData)$' \
-  /tmp/tasks-storage-tls-secret.yaml > apps/staging/kan/tasks-storage-tls-secret.sops.yaml
-
-rm -f /tmp/tasks-storage-tls-secret.yaml
-```
-
-Note: If you use self-signed certs, import the CA/cert into your internal
-clients to avoid browser warnings. The Kan deployment trusts
-`tasks-storage-tls-secret` via `NODE_EXTRA_CA_CERTS`.
+Automation options:
+- Local cron on an admin machine running `renew-tls.sh`, then commit + push.
+- GitHub Actions scheduled workflow with secrets:
+  `CF_Token`, `CF_Account_ID`, and `SOPS_AGE_KEY` (or `SOPS_AGE_KEY_FILE`).
 
 ## Verify deployment
 

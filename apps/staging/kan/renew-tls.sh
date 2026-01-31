@@ -44,6 +44,7 @@ cleanup() {
 trap cleanup EXIT
 
 for domain in "${DOMAINS[@]}"; do
+  "${ACME_SH}" --set-default-ca --server letsencrypt >/dev/null 2>&1 || true
   echo "Issuing/renewing cert for ${domain}..."
   "${ACME_SH}" --issue --dns dns_cf -d "${domain}"
 

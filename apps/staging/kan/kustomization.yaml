@@ -4,5 +4,9 @@ namespace: kan
 resources:
   - ../../base/kan
   - ingress.yaml
+  - minio-ingress.yaml
   - kan-secret.sops.yaml
+  - kan-s3-secret.sops.yaml
+  - minio-root-secret.sops.yaml
+  - tasks-storage-tls-secret.sops.yaml
   - tasks-tls-secret.sops.yaml

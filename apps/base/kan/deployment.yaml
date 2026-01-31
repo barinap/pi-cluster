@@ -60,13 +60,6 @@ spec:
               value: "kan-avatars"
             - name: NEXT_PUBLIC_ATTACHMENTS_BUCKET_NAME
               value: "kan-attachments"
-            - name: NODE_EXTRA_CA_CERTS
-              value: /etc/ssl/certs/tasks-storage-ca.crt
-          volumeMounts:
-            - name: tasks-storage-ca
-              mountPath: /etc/ssl/certs/tasks-storage-ca.crt
-              subPath: tls.crt
-              readOnly: true
           readinessProbe:
             httpGet:
               path: /
@@ -83,7 +76,3 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 2
             failureThreshold: 6
-      volumes:
-        - name: tasks-storage-ca
-          secret:
-            secretName: tasks-storage-tls-secret

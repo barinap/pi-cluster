@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kan
+  template:
+    metadata:
+      labels:
+        app: kan
+    spec:
+      containers:
+        - name: kan
+          image: ghcr.io/kanbn/kan:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_BASE_URL
+              value: "https://tasks.barina.tech"
+            - name: NEXT_PUBLIC_ALLOW_CREDENTIALS
+              value: "true"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kan-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_URL
+              value: "postgresql://kan:$(POSTGRES_PASSWORD)@postgres:5432/kan_db"
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kan-secret
+                  key: BETTER_AUTH_SECRET

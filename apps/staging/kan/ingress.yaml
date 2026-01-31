@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kan
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: tasks.barina.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kan
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - tasks.barina.tech
+      secretName: tasks-tls-secret

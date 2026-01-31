@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kan
+resources:
+  - ../../base/kan
+  - ingress.yaml
+  - kan-secret.sops.yaml
+  - tasks-tls-secret.sops.yaml

@@ -12,6 +12,18 @@ spec:
       labels:
         app: kan
     spec:
+      initContainers:
+        - name: kan-migrate
+          # Kan migrate ~v0.5.5 (2026-03-12) - runs Drizzle DB migrations before app starts
+          image: ghcr.io/kanbn/kan-migrate@sha256:b8d471291866e3c67d26bd924352f64a03cce805c2673c998ecc4ffa0f08977b
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kan-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_URL
+              value: "postgresql://kan:$(POSTGRES_PASSWORD)@postgres:5432/kan_db"
       containers:
         - name: kan
           # Kan ~v0.5.5 (2026-03-12) - pinned to digest to prevent breaking changes on restart

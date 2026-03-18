@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: kan
-          image: ghcr.io/kanbn/kan:latest
+          # Kan ~v0.5.5 (2026-03-12) - pinned to digest to prevent breaking changes on restart
+          image: ghcr.io/kanbn/kan@sha256:bd0af200c962271db5fe22b5f508154ea5491cb947a0309d88458a16dc62772a
           ports:
             - containerPort: 3000
           env:

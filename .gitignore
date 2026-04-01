@@ -2,4 +2,5 @@
 .vscode
 .claude/
 AGENTS.md
+kubeconfig
 

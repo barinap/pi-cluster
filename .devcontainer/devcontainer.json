@@ -1,0 +1,12 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  "features": {
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "minikube": "none",
+      "helm": "none"
+    },
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "onCreateCommand": "sudo chsh -s /usr/bin/zsh $USER && bash .devcontainer/setup.sh",
+  "postCreateCommand": "direnv allow ."
+}

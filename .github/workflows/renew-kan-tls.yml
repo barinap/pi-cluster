@@ -47,6 +47,8 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git add apps/staging/kan/tasks-tls-secret.sops.yaml apps/staging/kan/tasks-storage-tls-secret.sops.yaml
-          git commit -m "renew kan tls certs"
+          git add apps/staging/kan/tasks-tls-secret.sops.yaml \
+                  apps/staging/kan/tasks-storage-tls-secret.sops.yaml \
+                  apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml
+          git commit -m "renew tls certs"
           git push

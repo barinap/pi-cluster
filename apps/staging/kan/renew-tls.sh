@@ -11,7 +11,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 AGE_RECIPIENT="age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h"
-DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech")
+DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech")
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -62,21 +62,36 @@ for domain in "${DOMAINS[@]}"; do
     --fullchain-file "${crt_file}"
 
   secret_name=""
+  secret_ns=""
   out_path=""
-  if [[ "${domain}" == "tasks.barina.tech" ]]; then
-    secret_name="tasks-tls-secret"
-    out_path="${REPO_ROOT}/apps/staging/kan/tasks-tls-secret.sops.yaml"
-  else
-    secret_name="tasks-storage-tls-secret"
-    out_path="${REPO_ROOT}/apps/staging/kan/tasks-storage-tls-secret.sops.yaml"
-  fi
+  case "${domain}" in
+    tasks.barina.tech)
+      secret_name="tasks-tls-secret"
+      secret_ns="kan"
+      out_path="${REPO_ROOT}/apps/staging/kan/tasks-tls-secret.sops.yaml"
+      ;;
+    tasks-storage.barina.tech)
+      secret_name="tasks-storage-tls-secret"
+      secret_ns="kan"
+      out_path="${REPO_ROOT}/apps/staging/kan/tasks-storage-tls-secret.sops.yaml"
+      ;;
+    pgadmin.barina.tech)
+      secret_name="pgadmin-tls-secret"
+      secret_ns="cnpg-cluster"
+      out_path="${REPO_ROOT}/apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml"
+      ;;
+    *)
+      echo "Unknown domain: ${domain}" >&2
+      exit 1
+      ;;
+  esac
 
   tmp_yaml="${TMP_DIR}/${secret_name}.yaml"
 
   kubectl create secret tls "${secret_name}" \
     --cert "${crt_file}" \
     --key "${key_file}" \
-    --namespace kan \
+    --namespace "${secret_ns}" \
     --dry-run=client -o yaml | sed '/^  namespace:/d' > "${tmp_yaml}"
 
   sops --encrypt \

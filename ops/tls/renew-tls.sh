@@ -7,9 +7,9 @@ set -euo pipefail
 #   export CF_Account_ID="<CLOUDFLARE_ACCOUNT_ID>"
 #   # Optional but recommended if API tokens are scoped per-zone:
 #   export CF_Zone_ID="<CLOUDFLARE_ZONE_ID>"
-#   ./apps/staging/kan/renew-tls.sh
+#   ./ops/tls/renew-tls.sh
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 AGE_RECIPIENT="age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h"
 DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech")
 

@@ -84,10 +84,12 @@ acme.sh --set-default-ca --server letsencrypt
 export CF_Token="<CLOUDFLARE_API_TOKEN>"
 export CF_Account_ID="<CLOUDFLARE_ACCOUNT_ID>"
 
-./apps/staging/kan/renew-tls.sh
+./ops/tls/renew-tls.sh
 
-git add apps/staging/kan/tasks-tls-secret.sops.yaml apps/staging/kan/tasks-storage-tls-secret.sops.yaml
-git commit -m "update kan tls certs"
+git add apps/staging/kan/tasks-tls-secret.sops.yaml \
+        apps/staging/kan/tasks-storage-tls-secret.sops.yaml \
+        apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml
+git commit -m "renew tls certs"
 git push
 ```
 

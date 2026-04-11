@@ -1,4 +1,4 @@
-name: renew-kan-tls
+name: renew-tls
 
 on:
   schedule:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Renew TLS secrets
         run: |
-          ./apps/staging/kan/renew-tls.sh
+          ./ops/tls/renew-tls.sh
 
       - name: Commit and push changes
         run: |

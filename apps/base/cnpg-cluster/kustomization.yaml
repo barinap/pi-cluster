@@ -7,3 +7,4 @@ resources:
   - pgadmin-pvc.yaml
   - pgadmin-deployment.yaml
   - pgadmin-service.yaml
+  - prometheus-rule.yaml

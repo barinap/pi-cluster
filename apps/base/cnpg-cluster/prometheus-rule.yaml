@@ -1,0 +1,50 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cnpg-cluster-alerts
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: cnpg-cluster.backups
+      rules:
+        - alert: CNPGBackupFailed
+          expr: cnpg_collector_last_failed_backup_timestamp > cnpg_collector_last_available_backup_timestamp
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG cluster {{ $labels.job }} backup failed"
+            description: |
+              Last failed backup timestamp is more recent than last successful one
+              for cluster {{ $labels.job }} (pod {{ $labels.pod }}). Check backups:
+              kubectl -n {{ $labels.namespace }} get backup
+
+        - alert: CNPGBackupStale
+          expr: |
+            cnpg_collector_last_available_backup_timestamp > 0
+            and
+            (time() - cnpg_collector_last_available_backup_timestamp) > 30 * 3600
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CNPG cluster {{ $labels.job }} has no recent backup"
+            description: |
+              No successful backup for cluster {{ $labels.job }} in the last 30 hours
+              (daily schedule + 6h buffer). Last success:
+              {{ $value | humanizeTimestamp }}.
+
+    - name: cnpg-cluster.health
+      rules:
+        - alert: CNPGCollectorDown
+          expr: cnpg_collector_up == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CNPG metrics collector down for {{ $labels.pod }}"
+            description: |
+              The cnpg_collector_up metric is 0 for pod {{ $labels.pod }} in
+              namespace {{ $labels.namespace }}. Prometheus cannot collect
+              PostgreSQL metrics. Check pod status and metrics endpoint on :9187.

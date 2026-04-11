@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: cnpg-app-user
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:pdag,iv:XPkJHgLSY9S7lhIurY6CKBo63mQt9c/W7NAIG/d5n5s=,tag:ogrz/rbMt21b/HWdsXdkww==,type:str]
+    password: ENC[AES256_GCM,data:YPdBzpZrBAxemEuQrNT+yoMKomCLhfxAP2btT1Nf1hw=,iv:ZUEXpNXW0NR8cKN3fiONLOg6LDC+pZf8LaXhR1I/ZgQ=,tag:SPr4yQBhNrCrXGWP90fJzw==,type:str]
+sops:
+    age:
+        - recipient: age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBlWUtuTXUxVVNycjNSYzAx
+            dHVqUjNucGdmZ25FUTI3d09pV1h5cE5IWWxjClBDWDMvL29YbFl1aFFyNGl3WVVn
+            UzJwb01LYUZGb1FvdXNqak5EOUJKODQKLS0tIFkzR0FQY0VabGdsMXZQblFNdk5u
+            NEw5YWkvOXJFdGNjVVZOV2RPVGNnNzgK5Vh/V+gxq4SOE3Fs0rFkgSGcRiRsJP2W
+            igiAQ49PigH3DQWTPqKzloP7WRF0easVv87L9wIzxpNqwYb1By5vJw==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-04-11T18:55:52Z"
+    mac: ENC[AES256_GCM,data:3SnTgT3JVVX/mm3N0RSbLZfSYSPuowQQGY5ilzkvwR043Du4SMDsMOIh92EJXXSHFSAZ3ODBDU9yMnSecvfT0Uui8U0gYs5HijGyU9YNBR2nPNADCnTm0f+OLOv6RCQXfiJB4sacq4gGALkfqVHUlxVh+3WGSxNv0sA/HtOo51I=,iv:fCAdOf3dLdblamBUR96hxLL0fGODiPDfGNCQ4foSj5k=,tag:PlPb0pC6xHJIzn2dmy0H4A==,type:str]
+    encrypted_regex: ^(data|stringData)$
+    version: 3.12.2

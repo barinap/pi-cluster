@@ -1,0 +1,41 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-cluster
+spec:
+  instances: 2
+
+  inheritedMetadata:
+    labels:
+      release: kube-prometheus-stack
+
+  storage:
+    size: 1Gi
+    storageClass: synology-iscsi
+
+  monitoring:
+    enablePodMonitor: true
+
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+      secret:
+        name: cnpg-app-user
+
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://pi-cluster-backup/cnpg
+      endpointURL: https://h1t7.fra203.idrivee2-84.com
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-s3-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-s3-credentials
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip

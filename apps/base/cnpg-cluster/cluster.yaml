@@ -4,6 +4,7 @@ metadata:
   name: pg-cluster
 spec:
   instances: 2
+  enableSuperuserAccess: true
 
   inheritedMetadata:
     labels:

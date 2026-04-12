@@ -8,3 +8,4 @@ resources:
   - pgadmin-deployment.yaml
   - pgadmin-service.yaml
   - prometheus-rule.yaml
+  - pg-cluster-lb.yaml

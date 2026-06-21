@@ -29,6 +29,17 @@ spec:
         target:
           kind: PrometheusRule
   values:
+    # k3s embeds controller-manager, scheduler, and kube-proxy — no separate scrape endpoints
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    # k3s apiserver does not expose the standard Prometheus scrape endpoint
+    kubeApiServer:
+      enabled: false
+
     prometheus:
       prometheusSpec:
         storageSpec:

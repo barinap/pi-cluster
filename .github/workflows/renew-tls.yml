@@ -49,6 +49,7 @@ jobs:
           fi
           git add apps/staging/kan/tasks-tls-secret.sops.yaml \
                   apps/staging/kan/tasks-storage-tls-secret.sops.yaml \
-                  apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml
+                  apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml \
+                  monitoring/configs/staging/kube-prometheus-stack/grafana-tls-secret.yaml
           git commit -m "renew tls certs"
           git push

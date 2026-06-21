@@ -11,7 +11,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 AGE_RECIPIENT="age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h"
-DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech")
+DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech" "grafana.barina.tech")
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -79,6 +79,11 @@ for domain in "${DOMAINS[@]}"; do
       secret_name="pgadmin-tls-secret"
       secret_ns="cnpg-cluster"
       out_path="${REPO_ROOT}/apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml"
+      ;;
+    grafana.barina.tech)
+      secret_name="grafana-tls-secret"
+      secret_ns="monitoring"
+      out_path="${REPO_ROOT}/monitoring/configs/staging/kube-prometheus-stack/grafana-tls-secret.yaml"
       ;;
     *)
       echo "Unknown domain: ${domain}" >&2

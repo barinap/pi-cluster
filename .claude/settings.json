@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -n --rawfile ctx \"${CLAUDE_PROJECT_DIR:-$(pwd)}/.claude/hooks/pi-cluster-monitor-reminder.md\" '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:$ctx}}'"
+          }
+        ]
+      }
+    ]
+  }
+}

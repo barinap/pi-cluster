@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: grok-bot-webhook
+spec:
+  route:
+    receiver: grok-bot
+    groupBy:
+      - namespace
+      - alertname
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: drop
+        matchers:
+          - name: alertname
+            value: Watchdog
+            matchType: "="
+      - receiver: drop
+        matchers:
+          - name: alertname
+            value: InfoInhibitor
+            matchType: "="
+  receivers:
+    - name: drop
+    - name: grok-bot
+      webhookConfigs:
+        - url: https://api2.cursor.sh/automations/webhook/afd0cf3b-75f4-5011-9f27-d6613a3c720d
+          sendResolved: true
+          httpConfig:
+            authorization:
+              type: Bearer
+              credentials:
+                name: grok-bot-webhook-auth
+                key: token

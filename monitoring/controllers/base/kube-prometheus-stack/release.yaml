@@ -53,6 +53,8 @@ spec:
 
     alertmanager:
       alertmanagerSpec:
+        alertmanagerConfigMatcherStrategy:
+          type: None
         storage:
           volumeClaimTemplate:
             spec:

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: grok-bot-webhook-auth
+type: Opaque
+stringData:
+    token: ENC[AES256_GCM,data:uTqbrIT8hSoRueBoeQpWr3UWl/WeuHE17166l1ln2zE9uspLX/K5SwkhHiM10atNTjThLdSCZVJJuoZuez5K4Guwf+FA,iv:393EE+wksTdBlp7vUT/4tSeDlcWJBi0vTsDiori1vTc=,tag:Qp/LBepyMVcHwNOij0A3XA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBra3VWQW5QN2hxQzFNL1B4
+            MWpWSGpqTm5ndmxwUTRhckZwOU5mMzh4Y0VJCm1mR0tmdWJ3dGowcFNxU3VHNjVH
+            TlhlRTg1TzdBeVF2anVYSUlhOEQ4TmsKLS0tIFY5VFp5Vm9KU2JoRk9scU05dWlD
+            Y1R6SUZ6aEhDSkJGbzRuUjdRdXBSeU0KQ8T2GeHuG8DV4xR7Yc73y98gZaHDQPGK
+            wZYYJxeHDg4pOA1SWnAmB2zML9Pra++Lep8k5IIXLsb8SzXsuM2L8A==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-17T08:29:08Z"
+    mac: ENC[AES256_GCM,data:FezJVP8fA8jPteeDhv4vdz856EIqHW4LlNkkWdJnZ6niNL+raP1dGohrnkDDRuw+sFu1MFbVxrl6dylcYeAwuhKgh5hNOAA9PsvvhE/DGNcwpURny6OSBN50TKdofTLnDn9SG5ZRj1tFuUAgahbFqmH1n/l1QT1IDXQsfss5pGg=,iv:Q9t0x3qCF9kezZsYpbKqETKlv3GjbwEBp9csnRPn8Ck=,tag:tYoTKlijHBoQ5wDssK/ymA==,type:str]
+    version: 3.13.3

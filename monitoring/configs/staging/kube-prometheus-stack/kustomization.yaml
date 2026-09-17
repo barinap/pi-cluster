@@ -3,5 +3,5 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - grafana-tls-secret.yaml
-  
-  
+  - grok-bot-webhook-auth.sops.yaml
+  - grok-bot-webhook.yaml

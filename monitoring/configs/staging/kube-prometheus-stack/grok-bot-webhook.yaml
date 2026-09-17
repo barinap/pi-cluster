@@ -26,7 +26,7 @@ spec:
     - name: drop
     - name: grok-bot
       webhookConfigs:
-        - url: https://api2.cursor.sh/automations/webhook/afd0cf3b-75f4-5011-9f27-d6613a3c720d
+        - url: https://api2.cursor.sh/automations/webhook/409ddb2b-de6f-5556-8e02-da3b2a5217c0
           sendResolved: true
           httpConfig:
             authorization:

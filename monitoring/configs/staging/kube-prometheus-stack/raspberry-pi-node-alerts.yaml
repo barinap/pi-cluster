@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: raspberry-pi-node-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: raspberry-pi.nodes
+      rules:
+        - alert: RaspberryPiCPUHot
+          expr: |
+            node_thermal_zone_temp{job="node-exporter", type="cpu-thermal"} > 70
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Raspberry Pi CPU teplota vysoká ({{ $labels.instance }})"
+            description: >-
+              CPU thermal zone na {{ $labels.instance }} je {{ $value | humanize }}°C
+              déle než 5 minut (práh 70°C). Nody: malina=192.168.1.108,
+              rpinode1=192.168.1.21, rpinode2=192.168.1.109.
+
+        - alert: RaspberryPiCPUCritical
+          expr: |
+            node_thermal_zone_temp{job="node-exporter", type="cpu-thermal"} > 80
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Raspberry Pi CPU teplota kritická ({{ $labels.instance }})"
+            description: >-
+              CPU thermal zone na {{ $labels.instance }} je {{ $value | humanize }}°C
+              déle než 2 minuty (práh 80°C). Hrozí throttling. Zkontroluj chlazení
+              a zátěž na malina / rpinode1 / rpinode2.
+
+        - alert: RaspberryPiNodeExporterDown
+          expr: |
+            up{job="node-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "node-exporter na Pi nodu nedostupný ({{ $labels.instance }})"
+            description: >-
+              Prometheus nevidí node-exporter na {{ $labels.instance }} déle než 5 minut.
+              Host metriky (CPU/RAM/disk/teplota) pro tento Raspberry Pi node chybí.

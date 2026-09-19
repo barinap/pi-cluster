@@ -1,0 +1,19 @@
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: default
+  namespace: velero
+  labels:
+    component: velero
+spec:
+  default: true
+  provider: aws
+  objectStorage:
+    bucket: pi-cluster-backup
+    # Shared bucket with CNPG (s3://pi-cluster-backup/cnpg). Velero must use a
+    # prefix so root-level cnpg/ does not fail BSL validation.
+    prefix: velero
+  config:
+    region: eu-central-1
+    s3ForcePathStyle: "true"
+    s3Url: https://h1t7.fra203.idrivee2-84.com

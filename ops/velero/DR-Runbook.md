@@ -66,12 +66,16 @@ CREDS`
        --provider aws \
        --plugins velero/velero-plugin-for-aws:<AWS_PLUGIN_TAG> \
        --bucket pi-cluster-backup \
+       --prefix velero \
        --backup-location-config region=eu-central-1,s3ForcePathStyle=true,s3Url=https://h1t7.fra203.idrivee2-84.com \
        --secret-file /tmp/velero-credentials \
        --use-node-agent \
        --default-volumes-to-fs-backup`
+   - Or apply the checked-in BSL: `kubectl apply -f ops/velero/backupstoragelocation.yaml`
+   - Bucket layout: Velero data under `velero/` (`backups/`, `kopia/`); CNPG stays at `cnpg/` (do not put CNPG in the Velero prefix).
 4. Verify BackupStorageLocation and Velero components:
-   - `velero backup-location get`
+   - `velero backup-location get` (must show **Available**, prefix `velero`)
+   - `kubectl -n velero get bsl default -o yaml`
    - `kubectl -n velero get pods`
 
 ### 5) List existing backups and restore
@@ -109,6 +113,6 @@ CREDS`
    - `velero backup delete <BACKUP_NAME>`
 
 ## Notes
-- The schedule name for daily backups is `monitoring-linkding-daily`.
+- The schedule name for daily backups is `cluster-daily` (`0 1 * * *`).
 - Example successful backup name: `monitoring-linkding-full-20260131-1321`.
 - Always validate restore results and PVC reattachments before declaring recovery complete.

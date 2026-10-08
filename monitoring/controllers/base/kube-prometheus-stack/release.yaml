@@ -70,7 +70,10 @@ spec:
         storageClassName: synology-iscsi
         accessModes: [ "ReadWriteOnce" ]
         size: 5Gi
-      adminPassword: ninpo99
+      admin:
+        existingSecret: grafana-admin
+        userKey: admin-user
+        passwordKey: admin-password
       ingress:
         ## If true, Grafana Ingress will be created
         ##

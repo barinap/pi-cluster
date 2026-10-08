@@ -10,7 +10,7 @@ set -euo pipefail
 #   ./ops/tls/renew-tls.sh
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-AGE_RECIPIENT="age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h"
+AGE_RECIPIENT="age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl"
 DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech" "grafana.barina.tech")
 
 require_cmd() {

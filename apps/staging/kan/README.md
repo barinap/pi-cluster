@@ -24,7 +24,7 @@ metadata:
 KANS
 
 sops --encrypt \
-  --age age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h \
+  --age age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl \
   --encrypted-regex '^(data|stringData)$' \
   /tmp/kan-secret.yaml > apps/staging/kan/kan-secret.sops.yaml
 
@@ -62,12 +62,12 @@ metadata:
 EOF
 
 sops --encrypt \
-  --age age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h \
+  --age age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl \
   --encrypted-regex '^(data|stringData)$' \
   /tmp/minio-root-secret.yaml > apps/staging/kan/minio-root-secret.sops.yaml
 
 sops --encrypt \
-  --age age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h \
+  --age age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl \
   --encrypted-regex '^(data|stringData)$' \
   /tmp/kan-s3-secret.yaml > apps/staging/kan/kan-s3-secret.sops.yaml
 

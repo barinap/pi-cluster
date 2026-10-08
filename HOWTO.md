@@ -113,10 +113,10 @@ backendem.
 - **Pravidla šifrování:** `clusters/staging/.sops.yaml` — šifruje pouze pole
   `data` a `stringData` (`encrypted_regex: ^(data|stringData)$`), takže metadata
   (jméno, namespace, typ) zůstávají čitelná pro Flux i v Gitu.
-- **Veřejný klíč (recipient):** `age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h`
+- **Veřejný klíč (recipient):** `age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl`
   — je to veřejný klíč, není citlivý; je uvedený i v `.sops.yaml`.
 - **Privátní klíč** žije **mimo repo** (lokálně `~/.config/sops/age/keys.txt`,
-  v clusteru jako secret `sops-age` v `flux-system`, v CI jako `SOPS_AGE_KEY`).
+  v clusteru jako secret `sops-age` v `flux-system`; CI ho nepotřebuje — `renew-tls` šifruje jen veřejným klíčem). Klíč rotován 2026-10-08.
 
 Zašifrované soubory mají příponu `*.sops.yaml` (výjimka: `grafana-tls-secret.yaml`
 historicky bez přípony, ale je rovněž SOPS-zašifrovaný).

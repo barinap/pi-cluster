@@ -4,20 +4,20 @@ metadata:
     name: grafana-admin
 type: Opaque
 stringData:
-    admin-user: ENC[AES256_GCM,data:GTO0kXQ=,iv:i0yP4YH3USBfQxEPW3Z15qoomkTpTWo6LRrryjWFY3o=,tag:N/oUox2EV395u5Z3ClN1HQ==,type:str]
-    admin-password: ENC[AES256_GCM,data:aF/r1d/hJgKkTUwo4zmrryppzHey6yaYa4/v+hSTjZE=,iv:bDzx+Hhh7+NvizyGLDfySloSRahxRC4w03iMDeI0CLQ=,tag:pliJrK7DNx8bc7A+zujaGA==,type:str]
+    admin-user: ENC[AES256_GCM,data:+0aROIA=,iv:k5/mQ9dVGjXCtHEkmAtFaWl201bpOgl3Sn6o/pSruos=,tag:e7n0tW5Uh3Lylo1t01yVvw==,type:str]
+    admin-password: ENC[AES256_GCM,data:hy2PIUw76g1uQD1o+yAcLcbIR3mT2BRwEqmdbf9zsXY=,iv:+sgH59vVq/KbkpfFipwX2A/IdLHiBrfm9vafnu5JRh4=,tag:sqOj6Q9tTFJCF/9uxgdmSA==,type:str]
 sops:
     age:
         - enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB4ODBUTUtHclRFVFlqM3c4
-            OHlSYWhVMGdRblhrWHhNdUtFZC8xNFNhN0RVCmZ4RHdRVVptZE15Ym13Y3RjY0dH
-            Z0NZQjAwWUVoOHhyVjYxQUVWY2RVblUKLS0tIHdiaDBnZGNpNEVML2I4OCt4U3Iv
-            Rm83QXhSM1kzMnBJaG1FbnJZVGtOMzgKQtzoWZFY54lHaO5layXrKvxGMFGJ4dNJ
-            2gBoCeebl2go0HKvmme4i3nh36atu/V9ZAJIFy7hqvKOErbGJozMSg==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSEhBK2tvajI2dXpsRUtI
+            R05CMHJTcFNmZzVodmpGVGlKbUxFeExrc3lvCm1wWUUxYk5VUkVyakY2WXU4TnFq
+            MnNxUGFENlYrYy8vT0ZjR2pFUVo2amsKLS0tIE5xTHQvREpQQ1JIT1d0OHAxMkJ6
+            UXRrQjJ3dFRlM2grL3hrbWxSSzcvNWsKpsltnr78jCK8xUkygTAkSWRV8VBSpddz
+            gKXKfRDbCEvJ+aPXendj4tV9LF5YyAXg3lO3sxJrdvOhGLrFNUj+ag==
             -----END AGE ENCRYPTED FILE-----
-          recipient: age19fd7xlck0r3645chqjxq2m22qmtmatr4g0yghplsm33cn5yq7fuq69734h
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
     encrypted_regex: ^(data|stringData)$
-    lastmodified: "2026-10-08T13:41:19Z"
-    mac: ENC[AES256_GCM,data:GEda77KPzTvxGUJHyix3yhKesAjTYtX5f9qahrmbmszp/hZqJSUOAXJ6a+DjIY4xwhbNonZ/0gM2Ry6sXHY3BtWJ2O26JQjun3VgJ7OOV+SEpen12AbkhBV+68shM5ewiWhWuORvdoa74855LSjEtBZzPRT+pEnTZ3uJ4razKeU=,iv:igpqXWSKrxUbzxmE/CqWBvNkokoQOQNYdbuecCNxydQ=,tag:a0LK3Adyv596KBuC+vGL2g==,type:str]
+    lastmodified: "2026-10-08T14:30:25Z"
+    mac: ENC[AES256_GCM,data:BizQQEHmzc4vK0NOecnzmZO6GRkSexANJt0x7Rq/zu14rPTkYBa/tRIkXQOavPsL3PJl23v/sTuuym0a4yUqmjbqYjECEyjflyLrIMDxLlUC3CKvnsgogU35w83w85WeZ2uLX85L/eK+um42fAXLKetoyklFPd9EheyOXHvtQpA=,iv:OzQ3B+yMZXByyjkPQ5TF/z99Eg96Vf8iQsLftqnRb7U=,tag:EGb5a6RCbK8qjURxbftJgg==,type:str]
     version: 3.13.3

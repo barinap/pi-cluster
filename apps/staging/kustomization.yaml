@@ -4,3 +4,4 @@ resources:
   - linkding
   - kan
   - cnpg-cluster
+  - velero

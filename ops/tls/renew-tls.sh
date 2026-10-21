@@ -11,7 +11,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 AGE_RECIPIENT="age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl"
-DOMAINS=("tasks.barina.tech" "tasks-storage.barina.tech" "pgadmin.barina.tech" "grafana.barina.tech")
+DOMAINS=("pgadmin.barina.tech" "grafana.barina.tech")
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -65,16 +65,6 @@ for domain in "${DOMAINS[@]}"; do
   secret_ns=""
   out_path=""
   case "${domain}" in
-    tasks.barina.tech)
-      secret_name="tasks-tls-secret"
-      secret_ns="kan"
-      out_path="${REPO_ROOT}/apps/staging/kan/tasks-tls-secret.sops.yaml"
-      ;;
-    tasks-storage.barina.tech)
-      secret_name="tasks-storage-tls-secret"
-      secret_ns="kan"
-      out_path="${REPO_ROOT}/apps/staging/kan/tasks-storage-tls-secret.sops.yaml"
-      ;;
     pgadmin.barina.tech)
       secret_name="pgadmin-tls-secret"
       secret_ns="cnpg-cluster"

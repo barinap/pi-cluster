@@ -73,11 +73,9 @@ clusters/staging/        # Flux bootstrap — definice GitRepository a Kustomiza
 apps/
   base/                  # znovupoužitelné Kustomize základy (bez prostředí)
     cnpg-cluster/        # CloudNativePG cluster + pgAdmin + zálohy
-    kan/                 # Kan (kanban) + MinIO + Postgres pro Kan
     linkding/            # Linkding (bookmarky)
   staging/               # overlay pro prostředí + SOPS secrets + ingressy
     cnpg-cluster/
-    kan/
     linkding/
 
 monitoring/
@@ -142,7 +140,7 @@ nasazený z `storage/synology-csi`.
 - Vedle toho existuje vestavěná k3s `local-path` třída (taky označená jako default,
   ale aplikace cíleně používají `synology-iscsi`).
 
-Většina PVC (Prometheus, Alertmanager, MinIO, Postgres, Grafana, pgAdmin, linkding)
+Většina PVC (Prometheus, Alertmanager, Grafana, CNPG Postgres, pgAdmin, linkding)
 je na iSCSI svazcích z NASu.
 
 ---
@@ -158,8 +156,6 @@ Veřejně dostupné HTTP(S) služby přes `ingressClassName: traefik`:
 
 | Host | Service | Port | TLS secret |
 |---|---|---|---|
-| `tasks.barina.tech` | kan | 3000 | `tasks-tls-secret` |
-| `tasks-storage.barina.tech` | minio | 9000 | `tasks-storage-tls-secret` |
 | `pgadmin.barina.tech` | pgadmin | 80 | `pgadmin-tls-secret` |
 | `grafana.barina.tech` | kube-prometheus-stack-grafana | 80 | `grafana-tls-secret` |
 
@@ -191,12 +187,12 @@ a GitHub Actions cronem.
 3. Flux nové secrets nasadí, Traefik je začne servírovat.
 
 ### Domény v obnově
-`tasks.barina.tech`, `tasks-storage.barina.tech`, `pgadmin.barina.tech`, `grafana.barina.tech`.
+`pgadmin.barina.tech`, `grafana.barina.tech`.
 
 Mapování doména → (secret, namespace, cesta v repu) je v `case` bloku skriptu.
 Skript při generování secretu **odstraňuje řádek `namespace:`**; namespace pak
 do secretu vstřikuje `namespace:` pole v příslušné `kustomization.yaml` overlaye
-(`kan`, `cnpg-cluster`, `monitoring/configs/.../kube-prometheus-stack`).
+(`cnpg-cluster`, `monitoring/configs/.../kube-prometheus-stack`).
 **Bez tohoto pole obnova selže** s chybou „namespace not specified" — viz [§12](#12-známé-problémy-a-poučení).
 
 ### Spuštění obnovy ručně (cesta přes workflow — doporučeno)
@@ -223,14 +219,6 @@ git add <změněné *.sops.yaml> && git commit -m "renew tls certs" && git push
 ---
 
 ## 8. Aplikace
-
-### Kan — `tasks.barina.tech` (namespace `kan`)
-Kanban aplikace ([kanbn/kan](https://github.com/kanbn/kan)). Komponenty:
-- **kan** deployment (image pinnutý na digest, init-container `kan-migrate` spouští DB migrace),
-- **Postgres** StatefulSet (`postgres:5432`, databáze `kan_db`) — dedikovaný pro Kan,
-- **MinIO** StatefulSet + service (`tasks-storage.barina.tech`) — S3 úložiště pro přílohy/avatary,
-  buckety `kan-avatars`, `kan-attachments` (vytváří `minio-buckets-job`).
-- Secrets: `kan-secret` (DB heslo, `BETTER_AUTH_SECRET`), `kan-s3-secret`, `minio-root-secret`.
 
 ### Linkding — `ldpi.barina.tech` (namespace `linkding`)
 Bookmark manager (`sissbruecker/linkding`), 1 replika, data na PVC `linkding-data-pvc`.
@@ -359,6 +347,13 @@ toto pole nemělo a Flux selhával chybou „namespace not specified". Oprava:
 doplnit `namespace: monitoring` do té kustomizace. **Při přidávání další domény
 do obnovy vždy ověř, že cílový overlay nastavuje namespace.**
 
+### Odstranění aplikace Kan (2026-10-21)
+Kanban aplikace Kan (`tasks.barina.tech`, `tasks-storage.barina.tech`, namespace `kan`,
+vlastní Postgres + MinIO StatefulSet) se nepoužívala a byla odstraněna z repa i clusteru.
+Důvodem byl i konec oficiálních MinIO community image na Docker Hubu. Flux prune smazal
+namespace, PVC i iSCSI LUNy na NASu. Poslední data Kanu zůstávají jen v denních
+Velero zálohách do jejich expirace (TTL 30 dní).
+
 ### k3s a Prometheus scrape targety
 k3s embeduje controller-manager, scheduler, kube-proxy i apiserver a nevystavuje
 je standardními scrape endpointy. Proto jsou v kube-prometheus-stack HelmRelease
@@ -371,4 +366,3 @@ aby nevznikaly falešné alerty „target down".
 
 - `AGENTS.md` — konvence repa (YAML styl, commit guidelines, SOPS).
 - `ops/velero/DR-Runbook.md` — kompletní DR postup.
-- `apps/staging/kan/README.md` — jak (re)generovat Kan secrets.

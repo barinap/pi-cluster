@@ -277,11 +277,15 @@ endpoint `https://h1t7.fra203.idrivee2-84.com`):
 - **barman object store** přímo v definici clusteru (`apps/base/cnpg-cluster/cluster.yaml`),
   cesta `s3://pi-cluster-backup/cnpg`, WAL i data gzip, retence **30 dní**.
 - **ScheduledBackup `pg-cluster-daily`** — denně ve 03:00 (cron `0 0 3 * * *`).
-- Credentials v secretu `cnpg-backup-s3-credentials`.
+- Credentials v secretu `cnpg-backup-s3-credentials` (SOPS `apps/staging/cnpg-cluster/cnpg-backup-s3-credentials.sops.yaml`).
+- Velero a CNPG mají od 21. 10. 2026 **oddělené** iDrive klíče (jen bucket `pi-cluster-backup`).
 
 ### Velero (zálohy namespace + PV)
 - Zálohuje mj. `monitoring` a `linkding` (filesystem backup / kopia, AWS plugin).
 - Denní schedule `monitoring-linkding-daily`.
+- Credentials: secret `velero/cloud-credentials` (klíč `cloud`) je od 21. 10. 2026 v GitOps,
+  SOPS soubor `apps/staging/velero/cloud-credentials.sops.yaml` (Kustomization `apps`).
+  Namespace `velero` Flux nespravuje. Po změně: `kubectl -n velero rollout restart deploy/velero ds/node-agent`.
 - Pomocné skripty: `ops/velero/backup-now.sh`, `list-backups.sh`, `restore-linkding-test.sh`.
 
 ### Disaster Recovery
@@ -290,7 +294,7 @@ namespace) je v **`ops/velero/DR-Runbook.md`**. Hrubý postup při totální ztr
 1. Postavit nový k3s cluster.
 2. `flux bootstrap git` proti tomuto repu (`clusters/staging`).
 3. Obnovit Synology CSI secret a ověřit StorageClass.
-4. Přeinstalovat Velero proti existujícímu S3 bucketu.
+4. Vytvořit namespace `velero` (hned po bootstrapu, jinak selže Kustomization `apps`) a přeinstalovat Velero s `--no-secret` proti existujícímu S3 bucketu (secret dodá Flux).
 5. `velero restore` namespace `monitoring` + `linkding`.
 
 ---

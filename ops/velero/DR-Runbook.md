@@ -50,25 +50,29 @@ It does not contain secrets. Replace placeholders such as <IDRIVE_ACCESS_KEY> wh
    - `kubectl -n <CSI_NAMESPACE> get pods`
 
 ### 4) Reinstall Velero and point it to the existing S3 bucket
-1. Create a namespace for Velero if not managed by Flux (if managed, update Git):
+1. Create the `velero` namespace (it is NOT managed by Flux). Do this right after
+   `flux bootstrap` (or before it), otherwise Kustomization `apps` fails because it
+   applies a Secret into the `velero` namespace:
    - `kubectl create namespace velero`
-2. Provide credentials as a Kubernetes Secret (example):
-   - `cat <<'CREDS' > /tmp/velero-credentials
-[default]
-aws_access_key_id=<IDRIVE_ACCESS_KEY>
-aws_secret_access_key=<IDRIVE_SECRET_KEY>
-CREDS`
-   - `kubectl -n velero create secret generic cloud-credentials \
-       --from-file=cloud=/tmp/velero-credentials`
+2. Credentials are managed by GitOps (since 2026-10-21):
+   - Secret `velero/cloud-credentials`, key `cloud` (AWS credentials file format),
+     is SOPS-encrypted in `apps/staging/velero/cloud-credentials.sops.yaml`
+     and applied by Flux Kustomization `apps` (needs the `flux-system/sops-age` secret).
+   - Do NOT create the secret manually. Verify after reconcile:
+     `kubectl -n velero get secret cloud-credentials` (label `kustomize.toolkit.fluxcd.io/name=apps`).
+   - To rotate the iDrive key: edit with `sops apps/staging/velero/cloud-credentials.sops.yaml`,
+     commit, `flux reconcile kustomization apps`, then
+     `kubectl -n velero rollout restart deploy/velero ds/node-agent`.
 3. Install/upgrade Velero with filesystem backups (kopia) and the AWS plugin:
-   - Example Helm values or CLI install (adjust to your setup). Example Velero CLI:
+   - Example Helm values or CLI install (adjust to your setup). `--no-secret` because the
+     `cloud-credentials` secret comes from Flux. Example Velero CLI:
      `velero install \
        --provider aws \
        --plugins velero/velero-plugin-for-aws:<AWS_PLUGIN_TAG> \
        --bucket pi-cluster-backup \
        --prefix velero \
        --backup-location-config region=eu-central-1,s3ForcePathStyle=true,s3Url=https://h1t7.fra203.idrivee2-84.com \
-       --secret-file /tmp/velero-credentials \
+       --no-secret \
        --use-node-agent \
        --default-volumes-to-fs-backup`
    - Or apply the checked-in BSL: `kubectl apply -f ops/velero/backupstoragelocation.yaml`

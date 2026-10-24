@@ -6,6 +6,13 @@ spec:
   instances: 2
   enableSuperuserAccess: true
 
+  # Primary and replica must run on different nodes (previously 'preferred'
+  # let both land on one worker).
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
   inheritedMetadata:
     labels:
       release: kube-prometheus-stack

@@ -67,6 +67,7 @@ clusters/staging/        # Flux bootstrap — definice GitRepository a Kustomiza
   flux-system/           # vygenerováno fluxem (gotk-*), needitovat ručně
   apps.yaml              # Kustomization "apps"        → ./apps/staging
   monitoring.yaml        # Kustomizations monitoring-* → ./monitoring/...
+  cnpg-operator.yaml     # Kustomization cnpg-operator → ./controllers/cnpg-operator
   storage.yaml           # Kustomization storage       → ./storage/synology-csi
   .sops.yaml             # pravidla šifrování (age recipient)
 
@@ -77,6 +78,9 @@ apps/
   staging/               # overlay pro prostředí + SOPS secrets + ingressy
     cnpg-cluster/
     linkding/
+
+controllers/
+  cnpg-operator/         # operátor CloudNativePG (vendorovaný release manifest)
 
 monitoring/
   controllers/           # HelmRepository + HelmRelease kube-prometheus-stack
@@ -226,6 +230,16 @@ Vystavený přes **Cloudflare Tunnel** (ne Traefik). Env z secretu `linkding-con
 
 ### CloudNativePG — `pg-cluster` (namespace `cnpg-cluster`)
 Produkční PostgreSQL spravovaný operátorem **CloudNativePG** (operátor v `cnpg-system`).
+- operátor je v GitOps: `controllers/cnpg-operator/` (vendorovaný oficiální manifest `cnpg-<verze>.yaml`)
+  + Flux Kustomization `cnpg-operator` (`clusters/staging/cnpg-operator.yaml`); `apps` na něj má `dependsOn`,
+  takže operátor a CRD existují dřív než `pg-cluster`. CRD a namespace `cnpg-system` mají
+  `kustomize.toolkit.fluxcd.io/prune: disabled` a Kustomization má `deletionPolicy: Orphan`
+  (odebrání z gitu nesmí smazat CRD → tím i `pg-cluster` a data),
+- **upgrade operátoru:** stáhnout `https://github.com/cloudnative-pg/cloudnative-pg/releases/download/vX.Y.Z/cnpg-X.Y.Z.yaml`
+  do `controllers/cnpg-operator/`, starý soubor smazat, upravit `resources:` v `kustomization.yaml`,
+  ověřit `kubectl diff --server-side -f <(kubectl kustomize controllers/cnpg-operator)`, před tím záloha
+  (CNPG Backup + Velero). Po změně verze operátor restartuje instance Postgresu (rolling update);
+  neodstraňovat soubory z gitu ani `git revert` bez `flux suspend` (prune by smazal Deployment/RBAC operátoru),
 - **2 instance** (primary + replika, asynchronní replikace), storage `synology-iscsi` 1Gi/instance,
 - `enableSuperuserAccess: true` (pro správu z pgAdminu),
 - bootstrap databáze `app` (vlastník `app`, secret `cnpg-app-user`),

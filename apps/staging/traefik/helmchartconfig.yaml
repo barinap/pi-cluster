@@ -1,0 +1,29 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  # Merged on top of the values k3s sets for its bundled Traefik chart.
+  valuesContent: |-
+    deployment:
+      replicas: 2
+    # Never two replicas on one node; prefer the workers over the control-plane node (malina, Pi 4).
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: traefik
+                app.kubernetes.io/instance: traefik-kube-system
+            topologyKey: kubernetes.io/hostname
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1

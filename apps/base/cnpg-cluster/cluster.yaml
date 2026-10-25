@@ -33,6 +33,7 @@ spec:
 
   backup:
     retentionPolicy: "30d"
+    target: primary
     barmanObjectStore:
       destinationPath: s3://pi-cluster-backup/cnpg
       endpointURL: https://h1t7.fra203.idrivee2-84.com

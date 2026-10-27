@@ -1,0 +1,19 @@
+# CoreDNS mimo k3s (k3s bezi s --disable coredns). Service kube-dns musi mit clusterIP 10.43.0.10.
+# Samostatna Kustomization (bez zavislosti na apps/cnpg-operator), aby DNS nezaviselo na jinych vetvich.
+# deletionPolicy Orphan: smazani Kustomization neodstrani DNS z clusteru.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: coredns
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  retryInterval: 1m
+  timeout: 3m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./controllers/coredns
+  prune: true
+  wait: true
+  deletionPolicy: Orphan

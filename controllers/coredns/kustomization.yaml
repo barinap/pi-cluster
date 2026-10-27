@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# CoreDNS mimo k3s: k3s je spusteno s --disable coredns (/etc/rancher/k3s/config.yaml),
+# objekty spravuje Flux (Kustomization "coredns", clusters/staging/coredns.yaml).
+# Zalozeno z puvodniho k3s manifestu coredns.yaml (image 1.14.7). Image se pri upgradu k3s
+# sama NEZMENI - verzi je potreba zvednout rucne v deployment.yaml (viz HOWTO.md).
+resources:
+  - serviceaccount.yaml
+  - rbac.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - pdb.yaml

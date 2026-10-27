@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    # Spravuje Flux (controllers/coredns). Vlastni konfigurace: ConfigMap coredns-custom (*.server / *.override).
+    .:53 {
+        errors
+        health
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+          pods insecure
+          fallthrough in-addr.arpa ip6.arpa
+        }
+        hosts /etc/coredns/NodeHosts {
+          ttl 60
+          reload 15s
+          fallthrough
+        }
+        prometheus :9153
+        cache 30
+        loop
+        reload
+        loadbalance
+        import /etc/coredns/custom/*.override
+        forward . /etc/resolv.conf
+    }
+    import /etc/coredns/custom/*.server
+  # Statické záznamy uzlů (dříve je udržoval k3s). Při změně uzlů upravit ručně.
+  NodeHosts: |
+    192.168.1.21 rpinode1 rpiNode1
+    192.168.1.108 malina
+    192.168.1.109 rpinode2 rpiNode2

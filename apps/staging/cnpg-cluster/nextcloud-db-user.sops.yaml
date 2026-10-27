@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: nextcloud-db-user
+    labels:
+        cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:hiEOBBbUGXxT,iv:FynAduOlGR2yC6M1hfY1AOs/NcjWKzeefuPSi5EvBRI=,tag:FO1X/CtSshxqCUr9Szd+6g==,type:str]
+    password: ENC[AES256_GCM,data:bngePvuySxGl+MvfE834njdVoonSuLBjZjtbsz9+Nrx9uWE6yH5SZzh/Cm4sbls8,iv:OKDvhQGGJ7PwNX0l5r8UL7Z2vF0sEbI5Vk86gXZetnQ=,tag:kbTzTD0k7LKDIR+cjKm8aQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBqNTZoSDBLdnFuRUVRTzNU
+            SnZXdmZCdlYyblpGcVZ2S25rWmRYN0pVY1d3CmdwTU14ZzhGdVFzVEFpQlJUTSs0
+            Q0FxS3l5ZDBVeVdtYmpQRk82UzlOS2MKLS0tIFdBR20vSEl5NlFqSUdKWklHYWRU
+            YTc5MnVncWJpY3JnS3RpMHMzaFF6QW8K8iD4EBwr/2j1igghlvp/Is0OXZt6MojH
+            9JmYg7ZvyKDT1gGlCIvBKAv7teMYBYMw0Z3ZmsYACPiBeOo/3Q8Cvg==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-27T23:26:38Z"
+    mac: ENC[AES256_GCM,data:rgrDRCpe+WPpR4gdx9X/leCHceOi2LEzYLC30Pk4QTbJdOBaTWsIcxXDl//bw9GnE5Ov9yD36IVac8gnAyq50dlGfEe78eWsDHiGwUPHpOcLReiCDiSxWd2O5h4V2TBtGXb6ByYVbcjy18slbWweVy6z19XO20zZap2qLh3GfMw=,iv:HdRp2gyugqKt3XExKDV88K0LKb/fEDQlCdinRHzrCTw=,tag:PKgU7Y/IEESasbLPFqD/KA==,type:str]
+    version: 3.13.3

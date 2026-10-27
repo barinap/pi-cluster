@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - cluster.yaml
+  - database-nextcloud.yaml
   - scheduled-backup.yaml
   - pgadmin-pvc.yaml
   - pgadmin-deployment.yaml

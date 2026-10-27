@@ -18,11 +18,20 @@ spec:
       release: kube-prometheus-stack
 
   storage:
-    size: 1Gi
+    size: 5Gi
     storageClass: synology-iscsi
 
   monitoring:
     enablePodMonitor: true
+
+  # Declarative roles (passwords come from SOPS secrets in this namespace).
+  managed:
+    roles:
+      - name: nextcloud
+        ensure: present
+        login: true
+        passwordSecret:
+          name: nextcloud-db-user
 
   bootstrap:
     initdb:

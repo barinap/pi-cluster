@@ -262,12 +262,42 @@ Produkční PostgreSQL spravovaný operátorem **CloudNativePG** (operátor v `c
   ověřit `kubectl diff --server-side -f <(kubectl kustomize controllers/cnpg-operator)`, před tím záloha
   (CNPG Backup + Velero). Po změně verze operátor restartuje instance Postgresu (rolling update);
   neodstraňovat soubory z gitu ani `git revert` bez `flux suspend` (prune by smazal Deployment/RBAC operátoru),
-- **2 instance** (primary + replika, asynchronní replikace), storage `synology-iscsi` 1Gi/instance,
+- **2 instance** (primary + replika, asynchronní replikace), storage `synology-iscsi` 5Gi/instance (zvětšeno z 1Gi 2026-10-28; po zvětšení PVC je nutný restart podu pro resize FS: nejdřív replika, pak primary),
 - `enableSuperuserAccess: true` (pro správu z pgAdminu),
 - bootstrap databáze `app` (vlastník `app`, secret `cnpg-app-user`),
 - PodMonitor zapnutý → metriky tečou do Prometheu,
 - přímý přístup přes `pg-cluster-lb` LoadBalancer na portu 5432,
 - alerty v `prometheus-rule.yaml`.
+
+### Nextcloud — `office.barina.tech` (namespace `nextcloud`, nasazeno 2026-10-28)
+Soubory, kalendář, kontakty. Oficiální Helm chart (`apps/base/nextcloud/release.yaml`, HelmRelease
+`nextcloud`, chart **9.4.1**, image `nextcloud:35.0.2-apache`, obojí pinnuté), 1 replika (strategie Recreate),
+cron jako sidecar (`/cron.sh`, každých 5 min), limit 2 CPU / 2Gi.
+- **umístění:** `apps/base/nextcloud` (namespace, HelmRepository, HelmRelease, Redis) a `apps/staging/nextcloud`
+  (overlay se SOPS secrety, registrovaný v `apps/staging/kustomization.yaml`),
+- **databáze:** `pg-cluster` (CNPG), databáze `nextcloud` (CRD `Database` v `apps/base/cnpg-cluster/database-nextcloud.yaml`)
+  a role `nextcloud` (`spec.managed.roles` v `cluster.yaml`). Heslo role: SOPS secret `nextcloud-db-user`
+  (ns `cnpg-cluster`) + kopie `nextcloud-db` (ns `nextcloud`) — **musí mít stejné heslo**,
+- **Redis:** `nextcloud-redis` (Deployment `redis:8.8-alpine`, bez persistence, s heslem v secretu `nextcloud-redis`),
+- **úložiště:** PVC `nextcloud-nextcloud` 5Gi (html/config/apps) a `nextcloud-nextcloud-data` 50Gi (data), StorageClass
+  `synology-iscsi`; obě se dají zvětšit změnou `persistence.size` / `nextcloudData.size` (po zvětšení restart podu).
+  První mount 50Gi LUNu trvá několik minut (mkfs na NASu) — HelmRelease tím může skončit jako „install failed
+  (stalled)"; stačí `flux reconcile helmrelease nextcloud -n nextcloud --force`,
+- **admin:** uživatel `admin`, heslo v SOPS secretu `nextcloud-admin`; při nasazení uložené také do souboru
+  `~/nextcloud-admin-password` na BladeAsus (po změně hesla v UI soubor smazat — secret se používá jen při instalaci),
+- **přístup:** přes cloudflared (pravidlo `office.barina.tech → http://nextcloud.nextcloud.svc.cluster.local:80` v
+  ConfigMapu v `apps/staging/linkding/cloudflare.yaml`; po změně ConfigMapu zvýšit anotaci `config-revision`
+  v Deploymentu cloudflared, jinak se nenačte). DNS: proxied CNAME `office` → `<tunnel-id>.cfargotunnel.com`.
+  TLS končí na Cloudflare, Nextcloud má `overwriteprotocol=https`, `trusted_proxies=10.42.0.0/16`,
+  `forwarded_for_headers=HTTP_X_FORWARDED_FOR`. Cloudflare limit 100 MB / request → chunked upload 50 MiB.
+  Cloudflare Access na hostname není (rozbil by mobilní/desktop klienty),
+- **aktualizace:** zvýšit `chart.spec.version` a `image.tag` v `release.yaml` (Nextcloud povoluje jen postupné
+  skoky po jedné major verzi!), před tím záloha (Velero `nextcloud-<datum>` + CNPG Backup). Aktualizace se při startu
+  provede automaticky, krátký výpadek. HelmRelease nemá auto-remediation (retries 0) — při chybě zkontrolovat ručně,
+- **zálohy:** namespace spadá pod Velero `cluster-daily` (`*`, FS backup obou PVC přes kopia) a DB pod CNPG
+  `pg-cluster-daily`. Úvodní ruční zálohy: Velero `nextcloud-initial`, CNPG `pg-cluster-nextcloud-initial`.
+  Obnova: Velero restore namespace `nextcloud` + CNPG restore DB (viz `ops/velero/DR-Runbook.md`),
+- NAS je jediný disk bez redundance → jedinou další kopií dat jsou zálohy na iDrive e2.
 
 ### pgAdmin — `pgadmin.barina.tech` (namespace `cnpg-cluster`)
 Webová správa PostgreSQL. Deployment + PVC + service + ingress.

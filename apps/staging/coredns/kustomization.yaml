@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# CoreDNS is packaged by k3s (manifests/coredns.yaml, re-written by k3s; Deployment owned by k3s).
+# Do NOT put the Deployment here. The k3s manifest has no spec.replicas and already spreads pods
+# per node (topologySpreadConstraints), so replicas=2 is set once with
+#   kubectl -n kube-system scale deploy coredns --replicas=2
+# and survives k3s restarts/upgrades. Flux only manages the PDB.
+resources:
+  - pdb.yaml

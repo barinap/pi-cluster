@@ -5,3 +5,4 @@ resources:
   - cnpg-cluster
   - velero
   - traefik
+  - coredns

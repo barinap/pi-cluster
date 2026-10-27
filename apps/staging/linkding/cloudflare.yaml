@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         app: cloudflared
+      annotations:
+        # bump when the ConfigMap below changes (cloudflared does not reload it)
+        config-revision: "2"
     spec:
       # Spread the 2 tunnel replicas across different worker nodes.
       topologySpreadConstraints:
@@ -90,6 +93,8 @@ data:
     ingress:
     - hostname: ldpi.barina.tech
       service: http://linkding:9090
+    - hostname: office.barina.tech
+      service: http://nextcloud.nextcloud.svc.cluster.local:80
 
     # This rule matches any traffic which didn't match a previous rule, and responds with HTTP 404.
     - service: http_status:404

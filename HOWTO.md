@@ -68,6 +68,7 @@ clusters/staging/        # Flux bootstrap — definice GitRepository a Kustomiza
   apps.yaml              # Kustomization "apps"        → ./apps/staging
   monitoring.yaml        # Kustomizations monitoring-* → ./monitoring/...
   cnpg-operator.yaml     # Kustomization cnpg-operator → ./controllers/cnpg-operator
+  coredns.yaml           # Kustomization coredns       → ./controllers/coredns
   storage.yaml           # Kustomization storage       → ./storage/synology-csi
   .sops.yaml             # pravidla šifrování (age recipient)
 
@@ -81,6 +82,7 @@ apps/
 
 controllers/
   cnpg-operator/         # operátor CloudNativePG (vendorovaný release manifest)
+  coredns/               # CoreDNS mimo k3s (2 repliky, PDB) — viz §6
 
 monitoring/
   controllers/           # HelmRepository + HelmRelease kube-prometheus-stack
@@ -162,6 +164,26 @@ Veřejně dostupné HTTP(S) služby přes `ingressClassName: traefik`:
 |---|---|---|---|
 | `pgadmin.barina.tech` | pgadmin | 80 | `pgadmin-tls-secret` |
 | `grafana.barina.tech` | kube-prometheus-stack-grafana | 80 | `grafana-tls-secret` |
+
+### CoreDNS — mimo k3s, spravuje Flux
+Vestavěný CoreDNS z k3s je vypnutý (`/etc/rancher/k3s/config.yaml` na malině:
+`disable: [coredns]`). CoreDNS (Deployment `kube-system/coredns`, **2 repliky** rozprostřené
+po uzlech, PDB `minAvailable: 1`, ConfigMap `coredns` + volitelný `coredns-custom`,
+Service `kube-dns` s `clusterIP: 10.43.0.10`) je v `controllers/coredns/` a spravuje ho
+Flux Kustomization `coredns` (`prune: true`, `deletionPolicy: Orphan`).
+
+- **Verze image se při upgradu k3s sama nezmění!** Po každém upgradu k3s porovnat image
+  v `controllers/coredns/deployment.yaml` s tím, co by k3s nasadil (v nové verzi k3s:
+  `grep image: /var/lib/rancher/k3s/server/manifests/coredns.yaml` — soubor se při
+  `disable` nezapisuje; alternativně v release notes k3s / `rancher/mirrored-coredns-coredns`)
+  a případně zvednout tag + zkontrolovat Corefile. Pak commit, `flux reconcile ks coredns`.
+- `NodeHosts` v ConfigMap `coredns` je **statický** (dříve ho udržoval k3s). Při přidání/změně
+  uzlu upravit `controllers/coredns/configmap.yaml`.
+- Vlastní DNS pravidla: ConfigMap `kube-system/coredns-custom` (`*.server` / `*.override`).
+- Záloha před změnou: `~/backups/coredns-20261028/` na BladeAsus, sqlite `backup-pre-coredns-20261028`
+  v `/var/lib/rancher/k3s/server/db/` na malině.
+- Rollback na vestavěný: odstranit `disable` z `config.yaml`, `sudo systemctl restart k3s`
+  (k3s znovu zapíše `coredns.yaml`), Kustomization `coredns` pozastavit/smazat.
 
 ### LoadBalancer služby (mimo ingress)
 | Service | Port | Účel |

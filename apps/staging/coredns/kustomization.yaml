@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# CoreDNS is packaged by k3s (/var/lib/rancher/k3s/server/manifests/coredns.yaml, re-written by k3s).
+# That manifest has no spec.replicas and already spreads pods across nodes (topologySpreadConstraints,
+# DoNotSchedule on hostname), so Flux only owns spec.replicas (partial server-side apply) + a PDB.
+# The Deployment is annotated prune=disabled so removing this from git can never delete DNS.
+resources:
+  - replicas.yaml
+  - pdb.yaml

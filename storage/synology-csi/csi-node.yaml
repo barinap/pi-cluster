@@ -58,6 +58,22 @@ spec:
     spec:
       serviceAccount: csi-node-sa
       hostNetwork: true
+      # Wait for the Synology NAS after a power outage (Pis boot before the NAS)
+      initContainers:
+        - name: wait-for-dsm
+          image: synology/synology-csi:v1.2.1   # same image as csi-plugin (cached on nodes, busybox nc)
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              for hp in 192.168.1.206:5001 192.168.1.206:3260; do
+                h=${hp%:*}; p=${hp##*:}
+                until nc -z -w 3 "$h" "$p"; do
+                  echo "waiting for $h:$p ..."; sleep 5
+                done
+                echo "$h:$p is up"
+              done
       containers:
         - name: csi-driver-registrar
           securityContext:

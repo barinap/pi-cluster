@@ -1,0 +1,150 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nextcloud
+spec:
+  interval: 30m
+  timeout: 15m
+  chart:
+    spec:
+      chart: nextcloud
+      version: "9.4.1"
+      sourceRef:
+        kind: HelmRepository
+        name: nextcloud
+      interval: 12h
+  install:
+    remediation:
+      retries: 0
+  upgrade:
+    remediation:
+      retries: 0
+  values:
+    replicaCount: 1
+
+    image:
+      # Pinned; update manually together with the chart version (see HOWTO.md).
+      tag: 35.0.2-apache
+
+    nextcloud:
+      host: office.barina.tech
+      trustedDomains:
+        - office.barina.tech
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-admin
+        usernameKey: nextcloud-username
+        passwordKey: nextcloud-password
+      strategy:
+        type: Recreate
+      extraEnv:
+        # TLS terminates at Cloudflare; cloudflared talks plain HTTP to the pod.
+        - name: OVERWRITEPROTOCOL
+          value: https
+        - name: OVERWRITECLIURL
+          value: https://office.barina.tech
+        # cloudflared runs as a pod in the cluster (pod CIDR); Cloudflare sets X-Forwarded-For.
+        - name: TRUSTED_PROXIES
+          value: 10.42.0.0/16
+        - name: FORWARDED_FOR_HEADERS
+          value: HTTP_X_FORWARDED_FOR
+        - name: PHP_MEMORY_LIMIT
+          value: 512M
+        - name: PHP_UPLOAD_LIMIT
+          value: 100M
+      configs:
+        custom.config.php: |
+          <?php
+          $CONFIG = array(
+            'default_phone_region' => 'CZ',
+            'maintenance_window_start' => 1,
+            // Cloudflare limits a request body to 100 MB -> upload in 50 MiB chunks.
+            'files.chunked_upload.max_size' => 52428800,
+          );
+
+    internalDatabase:
+      enabled: false
+    externalDatabase:
+      enabled: true
+      type: postgresql
+      host: pg-cluster-rw.cnpg-cluster.svc.cluster.local
+      database: nextcloud
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-db
+        usernameKey: db-username
+        passwordKey: db-password
+
+    redis:
+      enabled: false
+    externalRedis:
+      enabled: true
+      host: nextcloud-redis
+      port: "6379"
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-redis
+        passwordKey: redis-password
+
+    cronjob:
+      enabled: true
+      type: sidecar
+      sidecar:
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+    service:
+      type: ClusterIP
+      port: 80
+
+    persistence:
+      enabled: true
+      storageClass: synology-iscsi
+      size: 5Gi
+      nextcloudData:
+        enabled: true
+        storageClass: synology-iscsi
+        size: 50Gi
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+
+    # install on a fresh DB takes a few minutes on a Pi: startupProbe holds off liveness
+    startupProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 90
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      failureThreshold: 6
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 10
+
+    # malina is tainted (no toleration -> never scheduled there); prefer a node other than the DB primary
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - cnpg-cluster
+              labelSelector:
+                matchLabels:
+                  cnpg.io/cluster: pg-cluster
+                  cnpg.io/instanceRole: primary

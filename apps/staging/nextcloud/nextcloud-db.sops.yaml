@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: nextcloud-db
+type: Opaque
+stringData:
+    db-username: ENC[AES256_GCM,data:krJId/4b1NsS,iv:0VnVdlbD0aItO9D/ruMdqLUpkrayQUSr44Duk1Wmy2Q=,tag:+Y0ijc0GVzEEljDykLOClA==,type:str]
+    db-password: ENC[AES256_GCM,data:755P1ENdqfh9/HYNR0CVOnNIv9QWU1XaQYQpuhSeeZYuBS4lZmZERaOhsqYBXOnf,iv:2UtbC0Mb/cJSW4tsOdGlngWvZsGIz/FTkeQatKFCKtw=,tag:Yo3onXtVw1Ody9t8fKdiWA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvVGh0U2Jad011aWMrekJD
+            ZDBRcjR4b2JKQVA5WlNUR1cvS2lJV2tSUGxVClVKa251Mk1Hb3ZxVnE1V1dtWFBI
+            dHcwbkhFQ0hYZENpN1lSMW5SVHVhdEUKLS0tIFhEOCtPUjBpU0hVY0J4RDBLWm53
+            VnhndjVMMENtVWRzMkJJSFdyWjlBUTgKvgr6RVrnxPY7lnLJFlyLZQcKiZTp7gJw
+            G3T8Tfl9GNPOEd5hghJZ78Bl3Ny3hmlzey1lU/ckvTmQPd90EtN/DQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-27T23:26:38Z"
+    mac: ENC[AES256_GCM,data:Z4nML3+i61BHGEq2Sc3R7EQaD1ymuM5HzNTQbzRde3qGgVyhaWAFj66DJjqJyw7fBQMwQRtXl+UvEGUVHy8GuFE+kqINgP6AVLD0GWXI5XzQQqCkvQ1X/qli+XJdWLEQsfAdB+H4/LTm6wzq/pOdSmnLaILzIAT1mEKtIzWs4m8=,iv:eIzd1po0xAcXLhlQwwShyN5Dh7I4RLrdKHfUbmqlarw=,tag:aMoZjStEgY2fS8Verkv7Lw==,type:str]
+    version: 3.13.3

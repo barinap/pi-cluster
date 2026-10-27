@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: nextcloud-redis
+type: Opaque
+stringData:
+    redis-password: ENC[AES256_GCM,data:EP/YBtucY1NNQkvGhC3Y87Yja7ma3QBPk5qwejXgXCXRZdaA+zghlRO6o13EQPtx,iv:BJSFBgueK3aF/krgKHwViNkBqCLg7B4RmSEpteBKAOE=,tag:m7gw9hfzF13uKowjTLq0FQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBKL2xiLy9iSGsyN0g1VTR0
+            ejEyamR3dXFEUVFLeGFtTjBOa0pjNXFERkUwCk4vTm5EMW1yMmtWMVAyeE1Lb1Rr
+            bEd2OVIzeGJ2Z1FJWHNuSTdzbThhdXcKLS0tIFFPeUIrVmRnaC9wWXpib1lEQkwz
+            c2o0RGdyZ2xXb2JLbVdjSmd1M3VWSjgKQsFdAJS9REjR0SZ4fJ/BhbKxFtNoa+4P
+            R6NGG2+WkPI6PRkSpM3RJQ9JdYDMzHKHBIZjYRgZjuL7GeTz+5IlaQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-27T23:26:38Z"
+    mac: ENC[AES256_GCM,data:7SP1Yo33j/4cTcYOk2iWlcHfwGxa4Fv31k7sf8g5YAhgHViNqKTocSId6mzjH/JNRN0JVojMSlSxaS3/74ryJIdUmaB8jwo59L3D4DRXCKONJgEJ+iJtP5q2z4Xa5fcGNX8ecPg8sDnQmoePYWABmpUEDJvq0MRTtU/2/CJjYmA=,iv:3Y5pfsVZB9pkRzBtD7txoAAWFSgazfzK5edPIqvR/5w=,tag:f1hQl7XqLLl21wpQ3/MBOw==,type:str]
+    version: 3.13.3

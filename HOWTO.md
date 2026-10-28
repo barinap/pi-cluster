@@ -189,6 +189,7 @@ Flux Kustomization `coredns` (`prune: true`, `deletionPolicy: Orphan`).
 | Service | Port | Účel |
 |---|---|---|
 | `cnpg-cluster/pg-cluster-lb` | 5432 | přímý přístup k PostgreSQL primary (např. z pgAdminu / klienta v LAN) |
+| `forgejo/forgejo-ssh` | 2222 | git přes SSH (Forgejo, jen LAN) |
 
 ### Cloudflare Tunnel (linkding)
 Linkding **není** za Traefikem — je vystavený přes **Cloudflare Tunnel**
@@ -213,7 +214,7 @@ a GitHub Actions cronem.
 3. Flux nové secrets nasadí, Traefik je začne servírovat.
 
 ### Domény v obnově
-`pgadmin.barina.tech`, `grafana.barina.tech`.
+`pgadmin.barina.tech`, `grafana.barina.tech`, `git.barina.tech`.
 
 Mapování doména → (secret, namespace, cesta v repu) je v `case` bloku skriptu.
 Skript při generování secretu **odstraňuje řádek `namespace:`**; namespace pak
@@ -298,6 +299,32 @@ cron jako sidecar (`/cron.sh`, každých 5 min), limit 2 CPU / 2Gi.
   `pg-cluster-daily`. Úvodní ruční zálohy: Velero `nextcloud-initial`, CNPG `pg-cluster-nextcloud-initial`.
   Obnova: Velero restore namespace `nextcloud` + CNPG restore DB (viz `ops/velero/DR-Runbook.md`),
 - NAS je jediný disk bez redundance → jedinou další kopií dat jsou zálohy na iDrive e2.
+
+### Forgejo — `git.barina.tech` (namespace `forgejo`, nasazeno 2026-10-28, jen LAN)
+Self-hosted Git. Oficiální Helm chart (`apps/base/forgejo/release.yaml`, HelmRelease `forgejo`, OCI repo
+`oci://code.forgejo.org/forgejo-helm`, chart **17.3.2**, image `forgejo:15.0.11-rootless` — obojí pinnuté), 1 replika
+(Recreate), limit 1 CPU / 1Gi. Overlay se SOPS secrety: `apps/staging/forgejo`.
+- **přístup:** jen z vnitřní sítě, **ne** přes Cloudflare tunnel. Ingress třídy `traefik` na `git.barina.tech`, TLS secret
+  `forgejo-tls-secret`. DNS: Cloudflare záznam A `git.barina.tech` → `192.168.1.108`, DNS only (vnitřní IP jako u pgAdminu).
+  Registrace jsou vypnuté (`DISABLE_REGISTRATION`), anonymní čtení také (`REQUIRE_SIGNIN_VIEW`), `OFFLINE_MODE=true`.
+  Pokud by se mělo někdy otevřít ven, je nutný tunel + ochrana přihlášení (Cloudflare Access/2FA),
+- **SSH pro git:** Service `forgejo-ssh` typu LoadBalancer na portu **2222** (port 22 používá sshd na uzlech):
+  `git clone ssh://git@git.barina.tech:2222/<uživatel>/<repo>.git`. Pro pohodlí lze v `~/.ssh/config` nastavit `Port 2222`,
+- **databáze:** `pg-cluster` (CNPG), DB `forgejo` (`database-forgejo.yaml`) a role `forgejo` (`managed.roles`), heslo ve
+  SOPS secretu `forgejo-db-user` (ns `cnpg-cluster`) + kopie `forgejo-db` (ns `forgejo`) — **musí mít stejné heslo**. Bez Redisu
+  (cache/session v paměti, fronta `level`),
+- **úložiště:** PVC `gitea-shared-storage` 20Gi (`synology-iscsi`; první mount nové LUN trvá minuty). Zvětšení změnou
+  `persistence.size`. Repozitáře se zálohují Velerem (kopia) jako kopie souborů za běhu; pro důležitá data lze doplnit `forgejo dump`,
+- **admin:** uživatel `barinap`, heslo v SOPS secretu `forgejo-admin` (`passwordMode: initialOnlyNoReset` — používá se jen při
+  prvním vytvoření účtu) a při nasazení také v souboru `~/forgejo-admin-password` na BladeAsus (mimo repo). Po změně hesla v UI soubor smazat,
+- **TLS obnova:** `git.barina.tech` je v `ops/tls/renew-tls.sh` (a v `git add` workflow `renew-tls.yml`), certifikát se obnovuje
+  každých 14 dní stejně jako pgadmin/grafana → `apps/staging/forgejo/forgejo-tls-secret.sops.yaml`. Lokální vydání: Cloudflare token má
+  omezení na IP (domácí IP) — při zapnutém Mullvad VPN spouštět přes `mullvad-exclude`,
+- **kontrola po upgradech:** `kubectl get helmrelease -n forgejo`, `curl https://git.barina.tech/api/healthz`; chart a image měnit
+  společně (`chart.spec.version`, `image.tag`), před major verzí zálohovat (Velero `forgejo-<datum>` + CNPG Backup). HelmRelease
+  nemá auto-remediation (retries 0),
+- **zálohy:** ns `forgejo` spadá pod Velero `cluster-daily`, DB pod CNPG `pg-cluster-daily`. Úvodní ruční zálohy:
+  Velero `forgejo-initial`, CNPG `pg-cluster-forgejo-initial`.
 
 ### pgAdmin — `pgadmin.barina.tech` (namespace `cnpg-cluster`)
 Webová správa PostgreSQL. Deployment + PVC + service + ingress.

@@ -3,9 +3,10 @@ kind: ConfigMap
 metadata:
   name: nextcloud-apache-scheme
 data:
-  # TLS terminates at Cloudflare; Apache itself only sees plain HTTP. Without a scheme in ServerName the
-  # .htaccess redirects (/.well-known/caldav|carddav -> /remote.php/dav/) are emitted as http:// URLs,
-  # which breaks iOS/DAV client setup. UseCanonicalName Off keeps the Host header from the request.
+  # TLS terminates at Cloudflare; Apache itself only sees plain HTTP. The .htaccess redirects
+  # (/.well-known/caldav|carddav -> /remote.php/dav/) are therefore emitted as http:// URLs,
+  # which breaks iOS/DAV client setup. Rewrite the scheme in Location when the proxy says https.
   proxy-scheme.conf: |
-    ServerName https://office.barina.tech
-    UseCanonicalName Off
+    <IfModule mod_headers.c>
+      Header always edit Location "^http://office\.barina\.tech/" "https://office.barina.tech/" "expr=%{HTTP:X-Forwarded-Proto} == 'https'"
+    </IfModule>

@@ -32,6 +32,11 @@ spec:
         login: true
         passwordSecret:
           name: nextcloud-db-user
+      - name: forgejo
+        ensure: present
+        login: true
+        passwordSecret:
+          name: forgejo-db-user
 
   bootstrap:
     initdb:

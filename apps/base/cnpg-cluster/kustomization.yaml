@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - cluster.yaml
   - database-nextcloud.yaml
+  - database-forgejo.yaml
   - scheduled-backup.yaml
   - pgadmin-pvc.yaml
   - pgadmin-deployment.yaml

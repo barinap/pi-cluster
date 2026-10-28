@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: forgejo-db-user
+    labels:
+        cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:vL04wBQTjA==,iv:MiB8MshmHHmWLXRT9jboCuxZl62sCfl0VbtHAn9u7h8=,tag:qp0PZo2XL0RsI7TL5s/Jmg==,type:str]
+    password: ENC[AES256_GCM,data:3CpVaOXPCeIBGL6YVCPWw/KZlWUzPU00/n7odzdjuMI=,iv:6EJV1z+fpJzB0nONJrUA28FCucH9G7vsZp/snLy7Y58=,tag:tTAKkdF59wMqwsXLObezeA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPR2o3bk9GTDJXdHovNE1h
+            RkduYUpRQUU1WFgwODlTbGtjcDZMaWREVlI4ClB0QzFSalVXUzZzd0xFQzFmY0xk
+            YlNnbHJjTzB2dFV5ekFPRVNteDN5b3cKLS0tIHZiazNqbzlxemkycUFhc0RKeWhD
+            VlUvZGRrRG96TjQ1UjVDVm14SjgrWVEKyMFfVq8hAbj01jxNt/g9lHhB2sZI6Bbs
+            Dx0Ia+xJmpO//ub2fvLFzb4UDDv7wjY1mt4mb0yeINpollDkgymmCA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-28T17:45:32Z"
+    mac: ENC[AES256_GCM,data:kCLAt7Hq1H2zMjuSwJMso/Hh+8qHbzejmulx8/RZSgY0tdeq/qapBbVeIkAEUUcPdeeaSq0+8L+jO7Uoi5jXn4zqIJHC8FQlc3s7FUfU3xRvqUleX5p0xSG8EJOQsGkpUSq+hLD8u1XpsmpBIfLAyybRrP3p1cKh8Sfj6cPL5xQ=,iv:HWJwxWLEmsO9pdJKE9EyiDpkP+MhU+PtVGhFVw7zs9w=,tag:jcklLSKZuUro35MxiMaN8Q==,type:str]
+    version: 3.13.3

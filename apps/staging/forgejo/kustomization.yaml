@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: forgejo
+resources:
+  - ../../base/forgejo
+  - forgejo-db.sops.yaml
+  - forgejo-admin.sops.yaml
+  - forgejo-tls-secret.sops.yaml

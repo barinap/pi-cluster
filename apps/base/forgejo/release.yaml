@@ -1,0 +1,122 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo
+spec:
+  interval: 30m
+  timeout: 15m
+  chart:
+    spec:
+      chart: forgejo
+      version: "17.3.2"
+      sourceRef:
+        kind: HelmRepository
+        name: forgejo
+      interval: 12h
+  install:
+    remediation:
+      retries: 0
+  upgrade:
+    remediation:
+      retries: 0
+  values:
+    replicaCount: 1
+    strategy:
+      type: Recreate
+
+    image:
+      # Pinned together with the chart (appVersion 15.0.11); update both manually (see HOWTO.md).
+      tag: 15.0.11
+      rootless: true
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: synology-iscsi
+
+    service:
+      http:
+        type: ClusterIP
+        port: 3000
+      ssh:
+        # k3s servicelb publishes this on every node; port 22 is taken by sshd on the nodes.
+        type: LoadBalancer
+        port: 2222
+
+    # TLS terminates in Traefik (secret forgejo-tls-secret, renewed by ops/tls/renew-tls.sh); LAN only.
+    ingress:
+      enabled: true
+      className: traefik
+      hosts:
+        - host: git.barina.tech
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: forgejo-tls-secret
+          hosts:
+            - git.barina.tech
+
+    gitea:
+      admin:
+        existingSecret: forgejo-admin
+        passwordMode: initialOnlyNoReset
+        email: barinap@barina.tech
+      config:
+        server:
+          DOMAIN: git.barina.tech
+          ROOT_URL: https://git.barina.tech/
+          SSH_DOMAIN: git.barina.tech
+          SSH_PORT: 2222
+          SSH_LISTEN_PORT: 2222
+          OFFLINE_MODE: true
+        database:
+          DB_TYPE: postgres
+          HOST: pg-cluster-rw.cnpg-cluster.svc.cluster.local:5432
+          NAME: forgejo
+          SSL_MODE: disable
+        service:
+          DISABLE_REGISTRATION: true
+          REQUIRE_SIGNIN_VIEW: true
+        other:
+          SHOW_FOOTER_VERSION: false
+        # no Redis: in-memory cache/session, level queue (chart defaults)
+        session:
+          PROVIDER: memory
+        cache:
+          ADAPTER: memory
+        queue:
+          TYPE: level
+      additionalConfigFromEnvs:
+        - name: FORGEJO__DATABASE__USER
+          valueFrom:
+            secretKeyRef:
+              name: forgejo-db
+              key: db-username
+        - name: FORGEJO__DATABASE__PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: forgejo-db
+              key: db-password
+
+    # malina is tainted (no toleration -> never scheduled there); prefer a node other than the DB primary
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - cnpg-cluster
+              labelSelector:
+                matchLabels:
+                  cnpg.io/cluster: pg-cluster
+                  cnpg.io/instanceRole: primary

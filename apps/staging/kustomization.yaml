@@ -6,3 +6,4 @@ resources:
   - velero
   - traefik
   - nextcloud
+  - forgejo

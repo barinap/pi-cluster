@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-apache-scheme
+data:
+  # TLS terminates at Cloudflare; Apache itself only sees plain HTTP. Without a scheme in ServerName the
+  # .htaccess redirects (/.well-known/caldav|carddav -> /remote.php/dav/) are emitted as http:// URLs,
+  # which breaks iOS/DAV client setup. UseCanonicalName Off keeps the Host header from the request.
+  proxy-scheme.conf: |
+    ServerName https://office.barina.tech
+    UseCanonicalName Off

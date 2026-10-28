@@ -52,6 +52,15 @@ spec:
           value: 512M
         - name: PHP_UPLOAD_LIMIT
           value: 100M
+      extraVolumes:
+        - name: apache-scheme
+          configMap:
+            name: nextcloud-apache-scheme
+      extraVolumeMounts:
+        - name: apache-scheme
+          mountPath: /etc/apache2/conf-enabled/proxy-scheme.conf
+          subPath: proxy-scheme.conf
+          readOnly: true
       configs:
         custom.config.php: |
           <?php

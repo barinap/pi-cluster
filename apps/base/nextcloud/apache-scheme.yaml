@@ -3,10 +3,9 @@ kind: ConfigMap
 metadata:
   name: nextcloud-apache-scheme
 data:
-  # TLS terminates at Cloudflare; Apache itself only sees plain HTTP. The .htaccess redirects
-  # (/.well-known/caldav|carddav -> /remote.php/dav/) are therefore emitted as http:// URLs,
-  # which breaks iOS/DAV client setup. Rewrite the scheme in Location when the proxy says https.
+  # TLS terminates at Cloudflare; Apache itself only sees plain HTTP, so the .htaccess redirects
+  # (/.well-known/caldav|carddav -> /remote.php/dav/) were emitted as http:// URLs, which breaks
+  # iOS/DAV client setup. mod_alias runs before the .htaccess rewrite rules and pins https.
+  # (A `Header edit Location` does not work: Location of mod_rewrite redirects is added after mod_headers.)
   proxy-scheme.conf: |
-    <IfModule mod_headers.c>
-      Header always edit Location "^http://office\.barina\.tech/" "https://office.barina.tech/" "expr=%{HTTP:X-Forwarded-Proto} == 'https'"
-    </IfModule>
+    RedirectMatch 301 "^/\.well-known/(caldav|carddav)" "https://office.barina.tech/remote.php/dav/"

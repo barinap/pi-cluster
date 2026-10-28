@@ -47,6 +47,7 @@ jobs:
             exit 0
           fi
           git add apps/staging/cnpg-cluster/pgadmin-tls-secret.sops.yaml \
-                  monitoring/configs/staging/kube-prometheus-stack/grafana-tls-secret.yaml
+                  monitoring/configs/staging/kube-prometheus-stack/grafana-tls-secret.yaml \
+                  apps/staging/forgejo/forgejo-tls-secret.sops.yaml
           git commit -m "renew tls certs"
           git push

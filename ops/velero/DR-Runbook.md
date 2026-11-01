@@ -129,10 +129,10 @@ Cíl: USB disk SanDisk Extreme 55AE (~3.6 TiB, ext4), sdílená složka `usbshar
 ### Co se zálohuje
 | Úloha | Obsah | Plán | Verze / kontrola |
 |---|---|---|---|
-| `NAS-data-USB` (task_id 1, repo `usbshare1/NAS-data-USB.hbk`) | sdílené složky `pi_cluster`, `TimeMachine` + konfigurace systému DSM (Hyper Backup ji přidává automaticky) | denně 03:00 | Smart Recycle, max. 30 verzí, kontrola integrity každou sobotu 08:00, komprese zapnutá, bez šifrování zálohy |
+| `NAS-data-USB` (task_id 1, repo `usbshare1/NAS-data-USB.hbk`) | sdílená složka `TimeMachine` + konfigurace systému DSM (Hyper Backup ji přidává automaticky) | denně 03:00 | Smart Recycle, max. 30 verzí, kontrola integrity každou sobotu 08:00, komprese zapnutá, bez šifrování zálohy |
 
 Poznámky:
-- `pi_cluster` je šifrovaná sdílená složka. Hyper Backup ji zálohuje **jen když je odemčená (připojená)**. Pokud je zamčená, úloha skončí stavem „částečně dokončeno“ (log: *The backup source shared folder is encrypted and not mounted*). Oprava: odemknout složku (Ovládací panely → Sdílená složka → pi_cluster → Šifrování → Připojit), případně zapnout automatické připojení po startu přes Správce klíčů.
+- Šifrovaná sdílená složka `pi_cluster` byla 2026-11-01 smazána (bez klíče, cluster na ní nezávisel). Úlohy Hyper Backup s chybějícím zdrojem končí stavem „částečně dokončeno“ (log: *The backup source folder does not exist*) – zdroj je nutné odebrat v Hyper Backup → úloha → Upravit → Složky. Zdroje úlohy nejdou přes DSM API měnit (SYNO.Backup.Task set změnu ignoruje).
 - Zálohy LUN (iSCSI PVC: `nextcloud-nextcloud-data`, `nextcloud-nextcloud`, `forgejo/gitea-shared-storage`) **nejsou** přes Hyper Backup multi-version k dispozici. DS120j tuto funkci nepodporuje (jen modely FS/btrfs). Dostupná je pouze starší jednoverzová „LUN backup“. Data aplikací v clusteru pokrývá Velero (viz výše).
 
 Mapování PV → LUN (pro ruční obnovu):

@@ -120,3 +120,34 @@ It does not contain secrets. Replace placeholders such as <IDRIVE_ACCESS_KEY> wh
 - The schedule name for daily backups is `cluster-daily` (`0 1 * * *`).
 - Example successful backup name: `monitoring-linkding-full-20260131-1321`.
 - Always validate restore results and PVC reattachments before declaring recovery complete.
+
+## Lokální záloha NAS na USB (Hyper Backup)
+
+NAS: Synology DS120j `BladeSynology` (192.168.1.206), DSM 7.4.1, Hyper Backup 4.2.2.
+Cíl: USB disk SanDisk Extreme 55AE (~3.6 TiB, ext4), sdílená složka `usbshare1` (`/volumeUSB1/usbshare`).
+
+### Co se zálohuje
+| Úloha | Obsah | Plán | Verze / kontrola |
+|---|---|---|---|
+| `NAS-data-USB` (task_id 1, repo `usbshare1/NAS-data-USB.hbk`) | sdílené složky `pi_cluster`, `TimeMachine` + konfigurace systému DSM (Hyper Backup ji přidává automaticky) | denně 03:00 | Smart Recycle, max. 30 verzí, kontrola integrity každou sobotu 08:00, komprese zapnutá, bez šifrování zálohy |
+
+Poznámky:
+- `pi_cluster` je šifrovaná sdílená složka. Hyper Backup ji zálohuje **jen když je odemčená (připojená)**. Pokud je zamčená, úloha skončí stavem „částečně dokončeno“ (log: *The backup source shared folder is encrypted and not mounted*). Oprava: odemknout složku (Ovládací panely → Sdílená složka → pi_cluster → Šifrování → Připojit), případně zapnout automatické připojení po startu přes Správce klíčů.
+- Zálohy LUN (iSCSI PVC: `nextcloud-nextcloud-data`, `nextcloud-nextcloud`, `forgejo/gitea-shared-storage`) **nejsou** přes Hyper Backup multi-version k dispozici. DS120j tuto funkci nepodporuje (jen modely FS/btrfs). Dostupná je pouze starší jednoverzová „LUN backup“. Data aplikací v clusteru pokrývá Velero (viz výše).
+
+Mapování PV → LUN (pro ruční obnovu):
+- `nextcloud/nextcloud-nextcloud-data` → `k8s-csi-pvc-f0dec89a-aee1-43a0-aff4-feacf2747a5e`
+- `nextcloud/nextcloud-nextcloud` → `k8s-csi-pvc-697b5abf-05da-472b-a6a2-f70699f7f6b4`
+- `forgejo/gitea-shared-storage` → `k8s-csi-pvc-19406990-5522-4188-9fd9-b6973e091336`
+
+### Obnova
+1. **Z NAS (DSM):** Hyper Backup → úloha `NAS-data-USB` → Obnovit → Data (nebo Konfigurace systému) → vybrat verzi → vybrat složky/soubory → obnovit na původní místo nebo jinam.
+2. **Bez NAS:** připojit USB disk (ext4) k Linuxu, nebo zkopírovat `NAS-data-USB.hbk` a otevřít ho v **Hyper Backup Explorer** (Windows/macOS/Linux, ke stažení na synology.com) → procházet verze → extrahovat soubory.
+3. **Konfigurace DSM:** Hyper Backup → Obnovit → Konfigurace systému → vybrat verzi.
+4. **LUN (pokud se zavede jednoverzová LUN záloha):** Hyper Backup → Obnovit → LUN → vybrat zálohu → obnovit jako nový LUN, ten pak namapovat na PV nebo z něj data zkopírovat.
+
+### Time Machine pro Mac
+- Sdílená složka `TimeMachine` na `volume1`: bez šifrování a bez koše. Kvóta 2 TB se nastavuje jako uživatelská kvóta uživatele `timemachine`, protože volume1 je ext4 a kvóta sdílené složky na něm nejde.
+- SMB3 (min. i max.), Bonjour Time Machine broadcast je zapnutý. V DSM firewallu jsou pro LAN 192.168.1.0/24 povolené porty TCP 445 a UDP 5353.
+- Připojení: `smb://192.168.1.206/TimeMachine`, případně se NAS sám nabídne v Nastavení systému → Time Machine.
+- Uživatel `timemachine` (bez administrátorských práv, přístup RW jen k `TimeMachine`). Heslo je uložené pouze lokálně na BladeAsus v `~/timemachine-password` (0600), v repu ani v dokumentaci není.

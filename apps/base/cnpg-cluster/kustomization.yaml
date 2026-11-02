@@ -6,7 +6,7 @@ resources:
   - database-nextcloud.yaml
   - database-forgejo.yaml
   - scheduled-backup.yaml
-  - pgadmin-pvc.yaml
+  - pgadmin-servers.yaml
   - pgadmin-deployment.yaml
   - pgadmin-service.yaml
   - prometheus-rule.yaml

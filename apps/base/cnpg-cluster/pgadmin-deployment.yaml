@@ -39,6 +39,10 @@ spec:
           volumeMounts:
             - name: pgadmin-data
               mountPath: /var/lib/pgadmin
+            - name: pgadmin-servers
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /misc/ping
@@ -52,6 +56,10 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
       volumes:
+        # no PVC (saves an iSCSI LUN); server list comes from ConfigMap pgadmin-servers
         - name: pgadmin-data
-          persistentVolumeClaim:
-            claimName: pgadmin-data
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: pgadmin-servers
+          configMap:
+            name: pgadmin-servers

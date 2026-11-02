@@ -1,0 +1,27 @@
+# pgAdmin server definitions (GitOps). pgAdmin runs without a PVC (emptyDir) since 2026-11-02
+# to save an iSCSI LUN (DS120j max 10). servers.json is imported on first start of a fresh
+# /var/lib/pgadmin; saved passwords / UI preferences are not persisted across restarts.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-servers
+data:
+  servers.json: |
+    {
+      "Servers": {
+        "1": {
+          "Name": "pg-cluster-rw.cnpg-cluster.svc.cluster.local",
+          "Group": "Servers",
+          "Host": "pg-cluster-rw.cnpg-cluster.svc.cluster.local",
+          "Port": 5432,
+          "MaintenanceDB": "postgres",
+          "Username": "postgres",
+          "SharedUsername": "postgres",
+          "Shared": true,
+          "ConnectionParameters": {
+            "sslmode": "prefer",
+            "connect_timeout": 10
+          }
+        }
+      }
+    }

@@ -44,6 +44,11 @@ spec:
         login: true
         passwordSecret:
           name: grafana-db-user
+      - name: linkding
+        ensure: present
+        login: true
+        passwordSecret:
+          name: linkding-db-user
 
   bootstrap:
     initdb:

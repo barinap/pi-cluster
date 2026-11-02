@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: linkding-db-user
+    labels:
+        cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:n3xM5xOaCIM=,iv:ZapYGS3EPBR5/3sh/oljd+UjF+pJ3/p6i/YBn4yKYC0=,tag:kqvpEEAzXGfvt0duwIGrBQ==,type:str]
+    password: ENC[AES256_GCM,data:O62hZYYB4xI5KtVCLAsQ+om+SEcEnUEMzRQLOFYJRLDVgGevdyhICCliQw==,iv:i44LCeC9N7TN+Fq2FhUdWgAIqmeiSyJ9lheLMt0jGzY=,tag:KV8vu2pdyZ3x/sot84AFHA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA0MVhSV2trVWZHaFhJalEw
+            THdkaW5hd0pjUG8xUmpXR3dZUUdyVXJmT1FvCm4xOUVIbTRsYXpIVlZkdVBMMVNm
+            QzBBYVNxSDBvQnQ2MXhZSUxReWJPS3MKLS0tIHNwdjN3REwyVytPR0tUNVpYR3dU
+            TVppeTdURWx4QlVRbHVaZnNyTHgrdGMKQQGU7sEI2Bb64lEu2wfzULx8HfE38YFI
+            9ylORcPcdgoC7G3dciOo/GOT5FEsctCWsHCCq+e3LninqaUFoUU9dQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T12:36:36Z"
+    mac: ENC[AES256_GCM,data:1sVPceKHLHervOZaUdtgOtD4GPZfWm/dgwKke4VwN37xG3GKUiHb6cKrxyiWEfaQ3EXZt9lL/i2lOIH/EdzqPvIzLg1eiGFnh0omKCZ92ygjzwz3N7iBaDMTltndWYyzRgQzLfdYwYJtGQPQGqhtlKfD9yrQkLY/cPdkF9+lVeU=,iv:0zUfp1XGRIoA8jcxFaNsI43OA/YFcytQNK8MwslwcuA=,tag:Nj9bgMwAQAAFn6JXk0nrIg==,type:str]
+    version: 3.13.3

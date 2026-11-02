@@ -6,6 +6,7 @@ resources:
   - database-nextcloud.yaml
   - database-forgejo.yaml
   - database-grafana.yaml
+  - database-linkding.yaml
   - scheduled-backup.yaml
   - pgadmin-servers.yaml
   - pgadmin-deployment.yaml

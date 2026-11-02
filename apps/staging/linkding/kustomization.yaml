@@ -6,6 +6,8 @@ resources:
   - cloudflare-secret.yaml
   - cloudflare.yaml
   - linkding-container-env-secret.yaml
+  - linkding-db.sops.yaml
+  - linkding-secretkey.sops.yaml
   
   
 

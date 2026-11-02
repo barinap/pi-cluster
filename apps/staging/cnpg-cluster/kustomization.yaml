@@ -8,6 +8,7 @@ resources:
   - nextcloud-db-user.sops.yaml
   - forgejo-db-user.sops.yaml
   - grafana-db-user.sops.yaml
+  - linkding-db-user.sops.yaml
   - pgadmin-secret.sops.yaml
   - pgadmin-tls-secret.sops.yaml
   - pgadmin-ingress.yaml

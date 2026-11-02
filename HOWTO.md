@@ -10,7 +10,7 @@ jak se spravuje přes GitOps a jak provádět běžné operace.
 
 ## 1. Přehled
 
-Cluster běží na třech Raspberry Pi uzlech s distribucí **k3s** (`v1.30.6+k3s1`)
+Cluster běží na třech Raspberry Pi uzlech s distribucí **k3s** (`v1.37.1+k3s1`, upgrade 2026-11-02)
 a je řízen výhradně **GitOps** přístupem přes **FluxCD** — jediný zdroj pravdy je
 tento Git repozitář. Nic se do clusteru nenasazuje ručně `kubectl apply`;
 veškeré změny jdou přes commit do větve `main`, který Flux automaticky aplikuje.
@@ -143,6 +143,15 @@ nasazený z `storage/synology-csi`.
   - `reclaimPolicy: Delete`, `allowVolumeExpansion: true`, `volumeBindingMode: Immediate`
 - Přístupové údaje k DSM jsou v secretu `synology-csi-client-info`
   (`storage/synology-csi/secret-client-info.yaml`, SOPS).
+- **Verze (2026-11-02):** `synology/synology-csi:v1.3.1` (nejnovější image na Docker Hubu; novější tagy na GitHubu
+  nemají image), sidecary provisioner v6.4.0, attacher v4.13.0, resizer v2.3.0, node-driver-registrar v2.18.0.
+  ClusterRole doplněna o `volumeattributesclasses` (resizer ≥ v2 / provisioner ≥ v5).
+- **TLS k DSM:** csi ≥ v1.3.1 ve výchozím stavu ověřuje TLS. DSM (`https://192.168.1.206:5001`) má výchozí self-signed
+  certifikát (CN=synology, „Synology Inc. CA“), proto je v client-info `insecureSkipVerify: true` (stejné chování jako v1.2.x).
+  Čistší alternativa: `tlsCACert` s CA certifikátem Synology (export z DSM ale obsahuje i privátní klíč — pozor).
+- **Limit NASu:** DS120j zvládá max. **10 LUN / 10 iSCSI targetů** a všech 10 je obsazeno stávajícími PV. Nové PVC
+  na `synology-iscsi` skončí `Pending` s chybou „Number of LUN reach limit“ — nejdřív je nutné nějaké PV uvolnit
+  (nebo použít `local-path` / NFS).
 - Vedle toho existuje vestavěná k3s `local-path` třída (taky označená jako default,
   ale aplikace cíleně používají `synology-iscsi`).
 
@@ -184,6 +193,17 @@ Flux Kustomization `coredns` (`prune: true`, `deletionPolicy: Orphan`).
   v `/var/lib/rancher/k3s/server/db/` na malině.
 - Rollback na vestavěný: odstranit `disable` z `config.yaml`, `sudo systemctl restart k3s`
   (k3s znovu zapíše `coredns.yaml`), Kustomization `coredns` pozastavit/smazat.
+
+### Upgrade k3s (ruční výměna binárky)
+Bez system-upgrade-controlleru a bez install skriptu (u agentů by mohl přepsat unit/env). Postup (naposledy v1.36.5 → v1.37.1, 2026-11-02):
+1. Stáhnout `k3s-arm64` + `sha256sum-arm64.txt` z GitHub release, ověřit sha256, nakopírovat na uzly.
+2. **malina:** `systemctl stop k3s`, zkopírovat `state.db*` do `/var/lib/rancher/k3s/server/db/backup-pre-<verze>-<datum>`,
+   `install -m755` nové binárky do `/usr/local/bin/k3s` (+ kopie `k3s.v<verze>`), `systemctl start k3s`. Pody běží dál.
+3. **agenti (rpinode1, pak rpinode2):** pokud je na uzlu CNPG primary, nejdřív switchover (PDB `pg-cluster-primary` jinak
+   blokuje drain): `kubectl -n cnpg-cluster patch cluster pg-cluster --subresource=status --type merge -p
+   '{"status":{"targetPrimary":"pg-cluster-2","phase":"Switchover in progress"}}'` (bez pluginu `kubectl cnpg`).
+   Pak `kubectl drain <uzel> --ignore-daemonsets --delete-emptydir-data`, výměna binárky, `systemctl restart k3s-agent`, `uncordon`.
+4. Kontrola: verze uzlů, `flux get ks -A` / `flux get hr -A`, image CoreDNS (pin), Traefik, ingressy, iSCSI svazky.
 
 ### LoadBalancer služby (mimo ingress)
 | Service | Port | Účel |
@@ -302,7 +322,7 @@ cron jako sidecar (`/cron.sh`, každých 5 min), limit 2 CPU / 2Gi.
 
 ### Forgejo — `git.barina.tech` (namespace `forgejo`, nasazeno 2026-10-28, jen LAN)
 Self-hosted Git. Oficiální Helm chart (`apps/base/forgejo/release.yaml`, HelmRelease `forgejo`, OCI repo
-`oci://code.forgejo.org/forgejo-helm`, chart **17.3.2**, image `forgejo:15.0.11-rootless` — obojí pinnuté), 1 replika
+`oci://code.forgejo.org/forgejo-helm`, chart **17.3.2**, image `forgejo:17.0.1-rootless` — obojí pinnuté; image tag je override nad appVersion chartu), 1 replika
 (Recreate), limit 1 CPU / 1Gi. Overlay se SOPS secrety: `apps/staging/forgejo`.
 - **přístup:** jen z vnitřní sítě, **ne** přes Cloudflare tunnel. Ingress třídy `traefik` na `git.barina.tech`, TLS secret
   `forgejo-tls-secret`. DNS: Cloudflare záznam A `git.barina.tech` → `192.168.1.108`, DNS only (vnitřní IP jako u pgAdminu).
@@ -323,6 +343,11 @@ Self-hosted Git. Oficiální Helm chart (`apps/base/forgejo/release.yaml`, HelmR
 - **kontrola po upgradech:** `kubectl get helmrelease -n forgejo`, `curl https://git.barina.tech/api/healthz`; chart a image měnit
   společně (`chart.spec.version`, `image.tag`), před major verzí zálohovat (Velero `forgejo-<datum>` + CNPG Backup). HelmRelease
   nemá auto-remediation (retries 0),
+- **mimo LTS (od 2026-11-02):** upgrade 15.0.11 (LTS) → 16.0.7 → 17.0.1 po jednotlivých major verzích. Stabilní řady mají
+  podporu jen ~3 měsíce → sledovat nové major verze (18 ≈ leden 2027) a upgradovat vždy o jednu major verzi; předtím
+  `forgejo dump` mimo cluster + Velero/CNPG záloha a přečíst breaking changes (v16: HTTP redirect u mirrorů = chyba;
+  v17: striktní parsování délek v configu, log do `forgejo.log`, mirror přes http:// a git:// zakázán). Pro
+  `forgejo doctor check` musí existovat `/data/log`. Volitelný úklid po v16/v17 (hooks/description, `pulls`) neproveden.
 - **zálohy:** ns `forgejo` spadá pod Velero `cluster-daily`, DB pod CNPG `pg-cluster-daily`. Úvodní ruční zálohy:
   Velero `forgejo-initial`, CNPG `pg-cluster-forgejo-initial`.
 

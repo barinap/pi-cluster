@@ -61,7 +61,7 @@ spec:
       # Wait for the Synology NAS after a power outage (Pis boot before the NAS)
       initContainers:
         - name: wait-for-dsm
-          image: synology/synology-csi:v1.2.1   # same image as csi-plugin (cached on nodes, busybox nc)
+          image: synology/synology-csi:v1.3.1   # same image as csi-plugin (cached on nodes, busybox nc)
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -79,7 +79,7 @@ spec:
           securityContext:
             privileged: true
           imagePullPolicy: Always
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.3.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.18.0
           args:
             - --v=5
             - --csi-address=$(ADDRESS)                         # the csi socket path inside the pod
@@ -102,7 +102,7 @@ spec:
           securityContext:
             privileged: true
           imagePullPolicy: IfNotPresent
-          image: synology/synology-csi:v1.2.1
+          image: synology/synology-csi:v1.3.1
           args:
             - --nodeid=$(KUBE_NODE_NAME)
             - --endpoint=$(CSI_ENDPOINT)

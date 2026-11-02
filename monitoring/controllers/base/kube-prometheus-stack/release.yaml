@@ -5,12 +5,11 @@ metadata:
   namespace: monitoring
 spec:
   interval: 30m
+  timeout: 15m
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "66.2.2"
-
-      # version: "58.x"
+      version: "92.17.0"
 
       sourceRef:
         kind: HelmRepository
@@ -65,6 +64,9 @@ spec:
                   storage: 5Gi
 
     grafana:
+      # RWO iSCSI PVC – avoid Multi-Attach during rollout
+      deploymentStrategy:
+        type: Recreate
       persistence:
         enabled: true
         storageClassName: synology-iscsi

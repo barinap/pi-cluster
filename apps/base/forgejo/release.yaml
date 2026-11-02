@@ -25,8 +25,9 @@ spec:
       type: Recreate
 
     image:
-      # Pinned together with the chart (appVersion 15.0.11); update both manually (see HOWTO.md).
-      tag: 15.0.11
+      # Chart 17.3.2 (appVersion 15.0.11 LTS) + image override to the current stable line.
+      # Leaving LTS: stable lines get ~3 months of support -> follow majors (see HOWTO.md).
+      tag: 16.0.7
       rootless: true
 
     resources:

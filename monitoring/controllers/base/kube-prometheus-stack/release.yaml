@@ -58,14 +58,20 @@ spec:
         # Only silences + notification log live here; they are lost on pod restart.
 
     grafana:
-      # RWO iSCSI PVC – avoid Multi-Attach during rollout
       deploymentStrategy:
         type: Recreate
+      # No PVC since 2026-11-02 (saves an iSCSI LUN – DS120j max 10). State (users, prefs) lives in
+      # Postgres pg-cluster (DB/role grafana, CNPG backups); dashboards come from ConfigMaps via the sidecar
+      # (monitoring/configs/staging/kube-prometheus-stack/dashboards), admin from secret grafana-admin.
       persistence:
-        enabled: true
-        storageClassName: synology-iscsi
-        accessModes: [ "ReadWriteOnce" ]
-        size: 5Gi
+        enabled: false
+      envFromSecret: grafana-db   # GF_DATABASE_USER / GF_DATABASE_PASSWORD (SOPS)
+      grafana.ini:
+        database:
+          type: postgres
+          host: pg-cluster-rw.cnpg-cluster.svc.cluster.local:5432
+          name: grafana
+          ssl_mode: require
       admin:
         existingSecret: grafana-admin
         userKey: admin-user

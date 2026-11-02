@@ -149,14 +149,27 @@ nasazený z `storage/synology-csi`.
 - **TLS k DSM:** csi ≥ v1.3.1 ve výchozím stavu ověřuje TLS. DSM (`https://192.168.1.206:5001`) má výchozí self-signed
   certifikát (CN=synology, „Synology Inc. CA“), proto je v client-info `insecureSkipVerify: true` (stejné chování jako v1.2.x).
   Čistší alternativa: `tlsCACert` s CA certifikátem Synology (export z DSM ale obsahuje i privátní klíč — pozor).
-- **Limit NASu:** DS120j zvládá max. **10 LUN / 10 iSCSI targetů** a všech 10 je obsazeno stávajícími PV. Nové PVC
-  na `synology-iscsi` skončí `Pending` s chybou „Number of LUN reach limit“ — nejdřív je nutné nějaké PV uvolnit
-  (nebo použít `local-path` / NFS).
+- **Limit NASu:** DS120j zvládá max. **10 LUN / 10 iSCSI targetů**. Při plném stavu skončí nové PVC na `synology-iscsi`
+  jako `Pending` s chybou „Number of LUN reach limit“. Od 2026-11-02 (optimalizace) je obsazeno **6 / 10**
+  (pgAdmin, Alertmanager, Grafana a linkding už PVC nemají) → očekávaný stav pro denní kontrolu:
+  **6 PV Bound, 6 VolumeAttachments, 6 iSCSI sessions** (součet přes rpinode1+rpinode2), 6 LUN / 6 targetů na DSM.
+  Nové aplikace s malými daty raději do Postgresu (`pg-cluster`) nebo emptyDir než na nový LUN.
 - Vedle toho existuje vestavěná k3s `local-path` třída (taky označená jako default,
   ale aplikace cíleně používají `synology-iscsi`).
 
-Většina PVC (Prometheus, Alertmanager, Grafana, CNPG Postgres, pgAdmin, linkding)
-je na iSCSI svazcích z NASu.
+PVC na iSCSI (stav 2026-11-02, LUN na DSM = `k8s-csi-<PV>`):
+
+| Namespace / PVC | Velikost | PV |
+|---|---|---|
+| `cnpg-cluster/pg-cluster-1` | 5Gi | `pvc-a0f91cdb-0701-4c7e-88e0-e9e48cbc6343` |
+| `cnpg-cluster/pg-cluster-2` | 5Gi | `pvc-f4f0e35f-57e2-47b6-be40-1006c9e2fd56` |
+| `forgejo/gitea-shared-storage` | 20Gi | `pvc-19406990-5522-4188-9fd9-b6973e091336` |
+| `monitoring/prometheus-…-prometheus-0` | 10Gi | `pvc-17a4282a-578d-4dea-b244-6b4838116f25` |
+| `nextcloud/nextcloud-nextcloud` | 5Gi | `pvc-697b5abf-05da-472b-a6a2-f70699f7f6b4` |
+| `nextcloud/nextcloud-nextcloud-data` | 50Gi | `pvc-f0dec89a-aee1-43a0-aff4-feacf2747a5e` |
+
+Bez PVC (od 2026-11-02): pgAdmin (emptyDir + `servers.json` z ConfigMap), Alertmanager (emptyDir),
+Grafana (DB `grafana` v pg-cluster), linkding (DB `linkding` v pg-cluster).
 
 ---
 
@@ -268,8 +281,14 @@ git add <změněné *.sops.yaml> && git commit -m "renew tls certs" && git push
 ## 8. Aplikace
 
 ### Linkding — `ldpi.barina.tech` (namespace `linkding`)
-Bookmark manager (`sissbruecker/linkding`), 1 replika, data na PVC `linkding-data-pvc`.
-Vystavený přes **Cloudflare Tunnel** (ne Traefik). Env z secretu `linkding-container-env`.
+Bookmark manager (`sissbruecker/linkding`), 1 replika. Vystavený přes **Cloudflare Tunnel** (ne Traefik).
+Env z secretu `linkding-container-env` (superuser) a `linkding-db` (SOPS, `LD_DB_USER`/`LD_DB_PASSWORD`).
+- **Data v PostgreSQL** `pg-cluster`, DB a role `linkding` (`database-linkding.yaml`, `managed.roles`, heslo v SOPS
+  `apps/staging/cnpg-cluster/linkding-db-user.sops.yaml` — **musí být stejné** jako v `apps/staging/linkding/linkding-db.sops.yaml`).
+  Migrováno ze SQLite 2026-11-02 (`dumpdata`/`loaddata`, 3286 záložek). Zálohy = CNPG (S3 + WAL).
+- **Bez PVC:** `/etc/linkding/data` je emptyDir (jen cache favikon/náhledů + fronta úloh `tasks.sqlite3`).
+  Django secret key je v SOPS secretu `linkding-secretkey`, mountovaný jako `data/secretkey.txt`.
+- Původní SQLite + secret key + JSON dump: `~/backups/linkding/*-20261102` na BladeAsus (0600).
 
 ### CloudNativePG — `pg-cluster` (namespace `cnpg-cluster`)
 Produkční PostgreSQL spravovaný operátorem **CloudNativePG** (operátor v `cnpg-system`).
@@ -352,7 +371,9 @@ Self-hosted Git. Oficiální Helm chart (`apps/base/forgejo/release.yaml`, HelmR
   Velero `forgejo-initial`, CNPG `pg-cluster-forgejo-initial`.
 
 ### pgAdmin — `pgadmin.barina.tech` (namespace `cnpg-cluster`)
-Webová správa PostgreSQL. Deployment + PVC + service + ingress.
+Webová správa PostgreSQL. Deployment + service + ingress, **bez PVC** (emptyDir, od 2026-11-02).
+Seznam serverů je v ConfigMap `pgadmin-servers` (`apps/base/cnpg-cluster/pgadmin-servers.yaml`) a načte se při
+startu s prázdným `/var/lib/pgadmin`. Uložená hesla k serverům a UI preference restart podu **nepřežijí**.
 Přihlašovací údaje v secretu `pgadmin-secret`.
 
 ---
@@ -365,17 +386,20 @@ v namespace `monitoring`. Zahrnuje Prometheus, Alertmanager, Grafanu a exportér
 - **Upgrade chartu:** přečíst `UPGRADE.md` chartu pro všechny major verze mezi starou a novou. CRD prometheus-operatoru
   před upgradem aplikovat server-side z odpovídajícího chartu (`helm pull ... --untar`, pak
   `kubectl apply --server-side --force-conflicts -f kube-prometheus-stack/charts/crds/crds/`); HelmRelease má navíc `upgrade.crds: CreateReplace`.
-  Grafana má `deploymentStrategy: Recreate` (RWO iSCSI PVC).
 
-- **Storage:** Prometheus 10Gi, Alertmanager 5Gi — oba na `synology-iscsi`.
+- **Storage:** Prometheus 10Gi na `synology-iscsi`; Alertmanager na emptyDir (ztišení se restartem ztratí).
 - **k3s úpravy:** scrape endpointy `kubeControllerManager`, `kubeScheduler`,
   `kubeProxy` a `kubeApiServer` jsou **vypnuté** — k3s je embeduje a nevystavuje
   je standardním způsobem (jinak by Prometheus hlásil falešné „target down").
-- **Grafana:** `grafana.barina.tech`, persistence 5Gi na iSCSI, TLS přes
+- **Grafana:** `grafana.barina.tech`, **bez PVC**: databáze v PostgreSQL `pg-cluster` (DB/role `grafana`, secret
+  `grafana-db` v `monitoring/configs/staging/kube-prometheus-stack/grafana-db.sops.yaml` = stejné heslo jako
+  `apps/staging/cnpg-cluster/grafana-db-user.sops.yaml`), admin ze secretu `grafana-admin`. TLS přes
   `grafana-tls-secret` (Let's Encrypt, viz §7).
 - **Alertmanager:** notifikace e-mailem (SMTP přes Office 365).
-- **CNPG dashboard** v Grafaně je udržovaný **ručně** (ne GitOps) — edituje se
-  přes Grafana API, není v repu.
+- **Dashboardy jen přes GitOps:** vlastní dashboardy patří do
+  `monitoring/configs/staging/kube-prometheus-stack/dashboards/*.json` (configMapGenerator s labelem
+  `grafana_dashboard: "1"`, načte je sidecar). Je tam CloudNativePG dashboard (gnetId 20417). Dashboard
+  vytvořený jen v UI sice v DB přežije, ale do repa ho exportovat.
 
 ---
 
@@ -392,8 +416,8 @@ endpoint `https://h1t7.fra203.idrivee2-84.com`):
 - Velero a CNPG mají od 21. 10. 2026 **oddělené** iDrive klíče (jen bucket `pi-cluster-backup`).
 
 ### Velero (zálohy namespace + PV)
-- Zálohuje mj. `monitoring` a `linkding` (filesystem backup / kopia, AWS plugin).
-- Denní schedule `monitoring-linkding-daily`.
+- Denní schedule `cluster-daily` (01:00, všechny namespace kromě systémových, fs-backup / kopia, TTL 30 dní).
+- Linkding a Grafana mají data v Postgresu → jejich obnova = obnova CNPG (Velero vrátí jen manifesty/secrety).
 - Credentials: secret `velero/cloud-credentials` (klíč `cloud`) je od 21. 10. 2026 v GitOps,
   SOPS soubor `apps/staging/velero/cloud-credentials.sops.yaml` (Kustomization `apps`).
   Namespace `velero` Flux nespravuje. Po změně: `kubectl -n velero rollout restart deploy/velero ds/node-agent`.
@@ -406,7 +430,8 @@ namespace) je v **`ops/velero/DR-Runbook.md`**. Hrubý postup při totální ztr
 2. `flux bootstrap git` proti tomuto repu (`clusters/staging`).
 3. Obnovit Synology CSI secret a ověřit StorageClass.
 4. Vytvořit namespace `velero` (hned po bootstrapu, jinak selže Kustomization `apps`) a přeinstalovat Velero s `--no-secret` proti existujícímu S3 bucketu (secret dodá Flux).
-5. `velero restore` namespace `monitoring` + `linkding`.
+5. Obnovit `pg-cluster` z CNPG zálohy (barman, S3) — obsahuje i data linkdingu, Grafany, Forgejo a Nextcloudu.
+6. `velero restore` ostatních namespace (PV aplikací na iSCSI: Forgejo, Nextcloud, Prometheus).
 
 ---
 

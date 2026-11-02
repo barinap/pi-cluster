@@ -101,6 +101,10 @@ It does not contain secrets. Replace placeholders such as <IDRIVE_ACCESS_KEY> wh
 ## DR Scenario: Testovací obnova do jiného namespace
 
 ### 1) Restore linkding into a test namespace
+> Since 2026-11-02 linkding keeps its data in PostgreSQL `pg-cluster` (DB `linkding`) and has no PVC.
+> A Velero restore of `linkding` therefore brings back only manifests/secrets; the bookmarks come from
+> the CNPG backup (barman / S3). A test-namespace restore points at the same production DB — scale it
+> to 0 or delete it right after checking. Off-cluster copy of the pre-migration SQLite: `~/backups/linkding/` on BladeAsus.
 1. Create restore with namespace mapping:
    - `velero restore create linkding-restore-test-<YYYYMMDD> \
        --from-backup <BACKUP_NAME> \
@@ -138,10 +142,16 @@ Poznámky:
 - Šifrovaná sdílená složka `pi_cluster` byla 2026-11-01 smazána (bez klíče, cluster na ní nezávisel). Úlohy Hyper Backup s chybějícím zdrojem končí stavem „částečně dokončeno“ (log: *The backup source folder does not exist*) – zdroj je nutné odebrat v Hyper Backup → úloha → Upravit → Složky. Zdroje úlohy nejdou přes DSM API měnit (SYNO.Backup.Task set změnu ignoruje).
 - Zálohy LUN (iSCSI PVC: `nextcloud-nextcloud-data`, `nextcloud-nextcloud`, `forgejo/gitea-shared-storage`) **nejsou** přes Hyper Backup multi-version k dispozici. DS120j tuto funkci nepodporuje (jen modely FS/btrfs). Dostupná je pouze starší jednoverzová „LUN backup“. Data aplikací v clusteru pokrývá Velero (viz výše).
 
-Mapování PV → LUN (pro ruční obnovu):
+Mapování PV → LUN (pro ruční obnovu; od 2026-11-02 je na DSM celkem **6 LUN / 6 targetů** z max. 10):
 - `nextcloud/nextcloud-nextcloud-data` → `k8s-csi-pvc-f0dec89a-aee1-43a0-aff4-feacf2747a5e`
 - `nextcloud/nextcloud-nextcloud` → `k8s-csi-pvc-697b5abf-05da-472b-a6a2-f70699f7f6b4`
 - `forgejo/gitea-shared-storage` → `k8s-csi-pvc-19406990-5522-4188-9fd9-b6973e091336`
+- `cnpg-cluster/pg-cluster-1` → `k8s-csi-pvc-a0f91cdb-0701-4c7e-88e0-e9e48cbc6343`
+- `cnpg-cluster/pg-cluster-2` → `k8s-csi-pvc-f4f0e35f-57e2-47b6-be40-1006c9e2fd56`
+- `monitoring/prometheus-…-prometheus-0` → `k8s-csi-pvc-17a4282a-578d-4dea-b244-6b4838116f25`
+
+pgAdmin, Alertmanager, Grafana a linkding od 2026-11-02 **nemají PVC**: Grafana a linkding mají data v `pg-cluster`
+(obnova přes CNPG), pgAdmin má seznam serverů v Gitu, Alertmanager jen ephemeral stav.
 
 ### Obnova
 1. **Z NAS (DSM):** Hyper Backup → úloha `NAS-data-USB` → Obnovit → Data (nebo Konfigurace systému) → vybrat verzi → vybrat složky/soubory → obnovit na původní místo nebo jinam.

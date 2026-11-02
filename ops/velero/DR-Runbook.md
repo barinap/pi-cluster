@@ -63,7 +63,10 @@ It does not contain secrets. Replace placeholders such as <IDRIVE_ACCESS_KEY> wh
    - To rotate the iDrive key: edit with `sops apps/staging/velero/cloud-credentials.sops.yaml`,
      commit, `flux reconcile kustomization apps`, then
      `kubectl -n velero rollout restart deploy/velero ds/node-agent`.
-3. Install/upgrade Velero with filesystem backups (kopia) and the AWS plugin:
+3. Install/upgrade Velero with filesystem backups (kopia) and the AWS plugin
+   (currently running: Velero v1.18.4 + velero-plugin-for-aws v1.14.4, since 2026-11-02; Velero is not in GitOps –
+   upgrade = `velero install --crds-only --dry-run -o yaml | kubectl apply --server-side --force-conflicts -f -`
+   + `kubectl set image` on `deployment/velero` and `daemonset/node-agent`):
    - Example Helm values or CLI install (adjust to your setup). `--no-secret` because the
      `cloud-credentials` secret comes from Flux. Example Velero CLI:
      `velero install \

@@ -334,8 +334,13 @@ Přihlašovací údaje v secretu `pgadmin-secret`.
 
 ## 9. Monitoring
 
-Nasazený **kube-prometheus-stack** (Helm chart `66.2.2`) přes Flux HelmRelease
+Nasazený **kube-prometheus-stack** (Helm chart `92.17.0`, operátor v0.94.2, Prometheus 3.x, Grafana 13.x; upgrade z 66.2.2 2026-11-02) přes Flux HelmRelease
 v namespace `monitoring`. Zahrnuje Prometheus, Alertmanager, Grafanu a exportéry.
+
+- **Upgrade chartu:** přečíst `UPGRADE.md` chartu pro všechny major verze mezi starou a novou. CRD prometheus-operatoru
+  před upgradem aplikovat server-side z odpovídajícího chartu (`helm pull ... --untar`, pak
+  `kubectl apply --server-side --force-conflicts -f kube-prometheus-stack/charts/crds/crds/`); HelmRelease má navíc `upgrade.crds: CreateReplace`.
+  Grafana má `deploymentStrategy: Recreate` (RWO iSCSI PVC).
 
 - **Storage:** Prometheus 10Gi, Alertmanager 5Gi — oba na `synology-iscsi`.
 - **k3s úpravy:** scrape endpointy `kubeControllerManager`, `kubeScheduler`,

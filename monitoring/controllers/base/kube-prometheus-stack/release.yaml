@@ -54,14 +54,8 @@ spec:
       alertmanagerSpec:
         alertmanagerConfigMatcherStrategy:
           type: None
-        storage:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: synology-iscsi
-              accessModes: [ "ReadWriteOnce" ]
-              resources:
-                requests:
-                  storage: 5Gi
+        # No PVC since 2026-11-02 (emptyDir; saves an iSCSI LUN – DS120j max 10).
+        # Only silences + notification log live here; they are lost on pod restart.
 
     grafana:
       # RWO iSCSI PVC – avoid Multi-Attach during rollout

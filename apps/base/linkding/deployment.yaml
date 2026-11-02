@@ -25,11 +25,23 @@ spec:
           ports:
             - containerPort: 9090
 
+          # Data in Postgres pg-cluster (DB/role linkding) since 2026-11-02 – no PVC (saves an iSCSI LUN).
+          env:
+            - name: LD_DB_ENGINE
+              value: postgres
+            - name: LD_DB_HOST
+              value: pg-cluster-rw.cnpg-cluster.svc.cluster.local
+            - name: LD_DB_PORT
+              value: "5432"
+            - name: LD_DB_DATABASE
+              value: linkding
           envFrom:
            # - configMapRef:
            #     name: linkding-configmap
             - secretRef:
                 name: linkding-container-env
+            - secretRef:
+                name: linkding-db          # LD_DB_USER / LD_DB_PASSWORD
 
           securityContext:
             allowPrivilegeEscalation: false
@@ -37,7 +49,15 @@ spec:
           volumeMounts:
             - name: linkding-data
               mountPath: /etc/linkding/data
+            - name: linkding-secretkey
+              mountPath: /etc/linkding/data/secretkey.txt
+              subPath: secretkey.txt
+              readOnly: true
       volumes:
+        # only favicons/previews cache + huey task queue (tasks.sqlite3) – ephemeral
         - name: linkding-data
-          persistentVolumeClaim:
-            claimName: linkding-data-pvc
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: linkding-secretkey
+          secret:
+            secretName: linkding-secretkey

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: grafana-db-user
+    labels:
+        cnpg.io/reload: "true"
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:tpIxXlNFkA==,iv:g8y81eFBM550qqinWBGVR5t+Yj8+2fd0CEfa507+Uv4=,tag:jb00WWp1AIT1BqqEFbhaOA==,type:str]
+    password: ENC[AES256_GCM,data:IAeAbBYwNuRKHA3OLVornTEsd/z2ks8OxX92swrrRiteexRDDUNXV/97OQ==,iv:fCp18mrVLOkRYDK+jXT/FjB2Up+vvUvHOavZDuuvgU0=,tag:4xwM5X0QdXOKzzNSJNNM+Q==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA2aWdCQmRNS2hwS3JCaGtU
+            S29yYlNjZ3BUK3I0THY0ejAvKzhLakdyK3dVCmtiR3FZQjZHUElVZDNlZzRteUNM
+            SkcvTTJpQWpxckY4Q25CMElnMEY2dnMKLS0tIFhxT2pFZXVySTBpT3hPc1R5Qytr
+            OXk4ZnRWc0hvZ3d5Z1FJOHBMYlpMdDQK154wYkX3jZ8G8OqYzRCcexhlOEsQf+Yb
+            khKtMVapL38AHVnG+MEvIQ6BL4j+FNZMwHaN9SGTmaQI02ThUCl5uQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T12:29:44Z"
+    mac: ENC[AES256_GCM,data:I7CCFkt6D1BHQi4PHecT3spuApc+hd0e1ZrPOeMQffPMDWYai3Zz4iUyS4G0hL9ieBl8nTAh8H/X53stISMaGVyZ1fJabzoBEI4N5kwypee+dIAOVBhLkeCDBS2KG7kt1JGA7wJtiiCNiOTfoQTyHjcsolquAs5OJHaBmKSQb8w=,iv:Q2KRULivEG1mj/MoLRrCKXwTbXo2SWZuHg4WuaN3Gj0=,tag:VnI4VzpzHLZ9QD6EGZtejw==,type:str]
+    version: 3.13.3

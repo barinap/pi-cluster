@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: grafana-db
+type: Opaque
+stringData:
+    GF_DATABASE_USER: ENC[AES256_GCM,data:9+vkA2WjpA==,iv:6Rm5jjSaZaXc+sTVCaxCT6OMPbk1QO9d37Po5yLDY6Y=,tag:5ChXrLJa14Td3MA4aQuc5w==,type:str]
+    GF_DATABASE_PASSWORD: ENC[AES256_GCM,data:kBFKcTdDGfeHrt/fCdAR98IezPSnKPhH5DeTZ8iaSIFTIu0skNC1QDzMfQ==,iv:H3Bn/YLtVspjSQu6pZnAWJzPVZeDAVDFHhyAq1y9Feg=,tag:0TGgrGf2zhBZk7vocgWmrA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAwMndyUEM2OEN0eXZSZWpS
+            VS9qc0Z6OWk0Qm9hTHVvSVpVTE96Mlc4WVRRCjhuWXVrb3RRdUpwekNNWmpXVEMr
+            ajU0RlJnZGlLYWFrd3N6UXM3ekQzSmMKLS0tIDlnVkp2ZmN0ZHljVjVIRHdjWXhN
+            NmNuR0FXNlFoWGtLcnFnL2tVdHFXT0kKgbAQhsi5GufA5V2UJs18KFAsaOpQYPKK
+            C54ZGKtHY6ODCCd72CQrrr+xqbm1/Qr2ClUWQWB4+tnpnyAfZ2NjWA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age13rglp49t3fzw0q4wq2n9y4g4dgsdv3nc5tzwetnrzjc4nx3z3gwqnd2nzl
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T12:29:44Z"
+    mac: ENC[AES256_GCM,data:AI4u2W0kAOeJtUCGlZVFfhcPM9+RErDtz+wtjEKOC8Uv+p8FJ4WD0hvQ2nYszGoXX1tSEm08vxcNQGGTPW3LhvW/4c+NDs+aXegxnf5QQdN/+i9feRDjRdxDL4G1ajus4neyo7w3cm74PC18knUbJKQnl0w5UWbK/wV8J5+5m8Q=,iv:U9nA34a/xvX/sn9ZWAbfAf2zrM/AIE45dulrKFakArk=,tag:O0hDQVlAzbVyOSTlLjpvZg==,type:str]
+    version: 3.13.3

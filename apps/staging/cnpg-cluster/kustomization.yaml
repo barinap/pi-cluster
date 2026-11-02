@@ -7,6 +7,7 @@ resources:
   - cnpg-app-user.sops.yaml
   - nextcloud-db-user.sops.yaml
   - forgejo-db-user.sops.yaml
+  - grafana-db-user.sops.yaml
   - pgadmin-secret.sops.yaml
   - pgadmin-tls-secret.sops.yaml
   - pgadmin-ingress.yaml

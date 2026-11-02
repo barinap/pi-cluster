@@ -39,6 +39,11 @@ spec:
         login: true
         passwordSecret:
           name: forgejo-db-user
+      - name: grafana
+        ensure: present
+        login: true
+        passwordSecret:
+          name: grafana-db-user
 
   bootstrap:
     initdb:

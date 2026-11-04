@@ -42,6 +42,8 @@ spec:
     prometheus:
       prometheusSpec:
         # LUN balance: prefer a different node than Nextcloud (2 LUNs), see apps/base/nextcloud
+        # (the chart's built-in podAntiAffinity must be off, otherwise duplicate key)
+        podAntiAffinity: ""
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:

@@ -15,6 +15,12 @@ spec:
     podAntiAffinityType: required
     topologyKey: kubernetes.io/hostname
 
+  # Requests from measurement (p95 CPU ~50m, max working set ~290Mi, 2026-11). No limits (OOM would kill the DB).
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
   inheritedMetadata:
     labels:
       release: kube-prometheus-stack

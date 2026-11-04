@@ -44,6 +44,12 @@ spec:
         # LUN balance: prefer a different node than Nextcloud (2 LUNs), see apps/base/nextcloud
         # (the chart's built-in podAntiAffinity must be off, otherwise duplicate key)
         podAntiAffinity: ""
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            memory: 2Gi
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
@@ -64,14 +70,57 @@ spec:
                 requests:
                   storage: 10Gi
 
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 96Mi
+        limits:
+          memory: 256Mi
+
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          memory: 192Mi
+
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 96Mi
+
     alertmanager:
       alertmanagerSpec:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
         alertmanagerConfigMatcherStrategy:
           type: None
         # No PVC since 2026-11-02 (emptyDir; saves an iSCSI LUN – DS120j max 10).
         # Only silences + notification log live here; they are lost on pod restart.
 
     grafana:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 384Mi
+        limits:
+          memory: 1Gi
+      sidecar:
+        resources:
+          requests:
+            cpu: 5m
+            memory: 128Mi
+          limits:
+            memory: 384Mi
       deploymentStrategy:
         type: Recreate
       # No PVC since 2026-11-02 (saves an iSCSI LUN – DS120j max 10). State (users, prefs) lives in

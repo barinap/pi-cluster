@@ -62,6 +62,12 @@ spec:
       initContainers:
         - name: wait-for-dsm
           image: synology/synology-csi:v1.3.1   # same image as csi-plugin (cached on nodes, busybox nc)
+          resources:
+            requests:
+              cpu: 10m
+              memory: 48Mi
+            limits:
+              memory: 192Mi
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -80,6 +86,12 @@ spec:
             privileged: true
           imagePullPolicy: Always
           image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.18.0
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
           args:
             - --v=5
             - --csi-address=$(ADDRESS)                         # the csi socket path inside the pod
@@ -103,6 +115,12 @@ spec:
             privileged: true
           imagePullPolicy: IfNotPresent
           image: synology/synology-csi:v1.3.1
+          resources:
+            requests:
+              cpu: 10m
+              memory: 48Mi
+            limits:
+              memory: 192Mi
           args:
             - --nodeid=$(KUBE_NODE_NAME)
             - --endpoint=$(CSI_ENDPOINT)

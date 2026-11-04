@@ -144,11 +144,29 @@ spec:
       periodSeconds: 10
       timeoutSeconds: 10
 
-    # malina is tainted (no toleration -> never scheduled there); prefer a node other than the DB primary
+    # malina is tainted (never scheduled there). LUN balance between rpinode1/2 (since 2026-11-04):
+    # Nextcloud (2 LUNs) prefers a different node than Forgejo + Prometheus (1 LUN each) -> ~3/3 LUNs incl. CNPG.
+    # The DB-primary rule only has low weight (the primary moves on failover).
     affinity:
       podAntiAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - forgejo
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: forgejo
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - monitoring
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+          - weight: 10
             podAffinityTerm:
               topologyKey: kubernetes.io/hostname
               namespaces:

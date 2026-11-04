@@ -41,6 +41,18 @@ spec:
 
     prometheus:
       prometheusSpec:
+        # LUN balance: prefer a different node than Nextcloud (2 LUNs), see apps/base/nextcloud
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: kubernetes.io/hostname
+                  namespaces:
+                    - nextcloud
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: nextcloud
         storageSpec:
           volumeClaimTemplate:
             spec:
